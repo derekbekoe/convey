@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
 	pubnub "github.com/pubnub/go"
@@ -71,7 +72,8 @@ func createChannelName() string {
 		s := fmt.Sprintf("Failed to create channel name: %s\n", err)
 		log.Fatal(s)
 	}
-	return u1.String()
+	// Remove dashes from UUID to make copy-paste easier in terminal
+	return strings.Replace(u1.String(), "-", "", -1)
 }
 
 func getPubNub() *pubnub.PubNub {
@@ -97,8 +99,10 @@ func SubscribeModeFunc(channelName string) {
 
 	pn := getPubNub()
 
-	// TODO-DEREK Get history since channel began instead of last 100 only
-	res, _, _ := pn.History().Channel(channelName).Count(100).Execute()
+	// TODO-DEREK Get history since channel began instead of last 100 only - https://support.pubnub.com/support/solutions/articles/14000043629-how-do-i-page-through-stored-messages-
+	res, status, _ := pn.History().Channel(channelName).Execute()
+
+	log.Println(status)
 
 	for _, element := range res.Messages {
 		if _, isEOF := element.Message.(map[string]interface{})["EOF"]; isEOF {

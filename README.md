@@ -15,3 +15,9 @@ cd $GOPATH/src/github.com/derekbekoe/convey
 go run main.go
 go build
 ```
+
+Cross-compile
+```bash
+env GOOS=linux GOARCH=amd64 go build
+```
+See https://golang.org/doc/install/source#environment
