@@ -5,6 +5,9 @@
 *.so
 *.dylib
 
+# Ignore bin directory (for output of 'go build')
+bin/
+
 # Test binary, build with `go test -c`
 *.test
 

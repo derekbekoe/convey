@@ -13,7 +13,7 @@ echo "Hello world" | convey
 go get -u github.com/derekbekoe/convey
 cd $GOPATH/src/github.com/derekbekoe/convey
 go run main.go
-go build
+go build -o bin/convey
 ```
 
 Cross-compile
