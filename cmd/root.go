@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -31,14 +32,37 @@ import (
 var cfgFile string
 var verbose bool
 
+// positionalArgsValidator valids the positional args
+func positionalArgsValidator(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return nil
+	} else if len(args) == 1 {
+		_, err := uuid.FromString(args[0])
+		return err
+	}
+	return errors.New("Invalid positional arguments")
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "convey",
 	Short: "A command-line tool that makes sharing pipes between machines easy.",
 	Long:  `A command-line tool that makes sharing pipes between machines easy.`,
+	Args:  positionalArgsValidator,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) { RootCommandFunc() },
+	Run: RootCommandFunc,
+}
+
+// RootCommandFunc is a handler for the bare application
+func RootCommandFunc(cmd *cobra.Command, args []string) {
+	if len(args) == 0 {
+		PublishModeFunc()
+	} else if len(args) == 1 {
+		SubscribeModeFunc(args[0])
+	} else {
+		log.Fatal("Too many args")
+	}
 }
 
 func createChannelName() string {
@@ -50,9 +74,7 @@ func createChannelName() string {
 	return u1.String()
 }
 
-// RootCommandFunc is a handler for the bare application
-func RootCommandFunc() {
-
+func getPubNub() *pubnub.PubNub {
 	config := pubnub.NewConfig()
 
 	subKey := viper.GetString("SubscribeKey")
@@ -66,6 +88,73 @@ func RootCommandFunc() {
 	config.PublishKey = pubKey
 
 	pn := pubnub.NewPubNub(config)
+	return pn
+}
+
+// SubscribeModeFunc handles reading messages from the message service
+func SubscribeModeFunc(channelName string) {
+	log.Println("Subscribed to channel ", channelName)
+
+	pn := getPubNub()
+
+	listener := pubnub.NewListener()
+	doneConnect := make(chan bool)
+	doneSubscribe := make(chan bool)
+
+	go func() {
+		for {
+			select {
+			case status := <-listener.Status:
+				switch status.Category {
+				case pubnub.PNDisconnectedCategory:
+					// This event happens when radio / connectivity is lost
+					log.Println("Messaging service lost connectivity")
+				case pubnub.PNConnectedCategory:
+					// Connect event. You can do stuff like publish, and know you'll get it.
+					// Or just use the connected event to confirm you are subscribed for
+					// UI / internal notifications, etc
+					log.Println("Messaging service connected")
+					doneConnect <- true
+				case pubnub.PNReconnectedCategory:
+					// Happens as part of our regular operation. This event happens when
+					// radio / connectivity is lost, then regained.
+					log.Println("Messaging service regained connectivity")
+				}
+			case message := <-listener.Message:
+				// Handle new message stored in message.message
+				if msg, ok := message.Message.(map[string]interface{}); ok {
+					if _, isEOF := msg["EOF"]; isEOF {
+						doneSubscribe <- true
+					} else {
+						fmt.Println(msg["msg"])
+						log.Printf("Got message: %s\n", msg["msg"])
+					}
+				}
+				log.Println("message.Message", message.Message)
+				log.Println("message.Timetoken", message.Timetoken)
+
+			case <-listener.Presence:
+				// handle presence
+			}
+		}
+	}()
+
+	pn.AddListener(listener)
+
+	pn.Subscribe().
+		Channels([]string{channelName}).
+		Execute()
+
+	<-doneConnect
+	<-doneSubscribe
+
+}
+
+// PublishModeFunc handles publishing messages to message service
+func PublishModeFunc() {
+
+	pn := getPubNub()
+
 	listener := pubnub.NewListener()
 	doneConnect := make(chan bool)
 	donePublish := make(chan bool)
@@ -102,8 +191,8 @@ func RootCommandFunc() {
 					if _, isEOF := msg["EOF"]; isEOF {
 						donePublish <- true
 					} else {
-						fmt.Println(msg["msg"])
-						log.Printf("Got message: %s\n", msg["msg"])
+						// fmt.Println(msg["msg"])
+						// log.Printf("Got message: %s\n", msg["msg"])
 					}
 				}
 				log.Println("message.Message", message.Message)
@@ -146,7 +235,6 @@ func RootCommandFunc() {
 		"EOF": true,
 	}
 	pn.Publish().Channel(channelName).Message(doneMsg).Execute()
-	log.Println("DONE!")
 
 	<-donePublish
 }
