@@ -44,6 +44,10 @@ func positionalArgsValidator(cmd *cobra.Command, args []string) error {
 	return errors.New("Invalid positional arguments")
 }
 
+// TODO-DEREK Add E2E encryption - https://www.pubnub.com/developers/tech/security/aes-encryption/
+
+// TODO-DEREK Figure out how to handle message ordering
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "convey",
