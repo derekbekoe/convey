@@ -97,6 +97,16 @@ func SubscribeModeFunc(channelName string) {
 
 	pn := getPubNub()
 
+	// TODO-DEREK Get history since channel began instead of last 100 only
+	res, _, _ := pn.History().Channel(channelName).Count(100).Execute()
+
+	for _, element := range res.Messages {
+		if _, isEOF := element.Message.(map[string]interface{})["EOF"]; isEOF {
+			os.Exit(0)
+		}
+		fmt.Println(element.Message.(map[string]interface{})["msg"])
+	}
+
 	listener := pubnub.NewListener()
 	doneConnect := make(chan bool)
 	doneSubscribe := make(chan bool)
@@ -147,11 +157,12 @@ func SubscribeModeFunc(channelName string) {
 
 	<-doneConnect
 	<-doneSubscribe
-
 }
 
 // PublishModeFunc handles publishing messages to message service
 func PublishModeFunc() {
+
+	// TODO-DEREK Do not subscribe if all you're doing is publishing
 
 	pn := getPubNub()
 
@@ -223,6 +234,7 @@ func PublishModeFunc() {
 		msg := map[string]interface{}{
 			"msg": line,
 		}
+		// TODO-DEREK Publish multiple messages using the same channel instead of this current approach
 		_, _, err := pn.Publish().Channel(channelName).Message(msg).Execute()
 		if err != nil {
 			// Request processing failed.
@@ -230,6 +242,8 @@ func PublishModeFunc() {
 			log.Printf("Failed to publish message: %s\n", err)
 		}
 	}
+
+	// TODO-DEREK On Ctrl+C, send EOF as well.
 
 	doneMsg := map[string]interface{}{
 		"EOF": true,
