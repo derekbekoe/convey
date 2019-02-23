@@ -50,7 +50,8 @@ go build -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$(git re
 
 Cross-compile
 ```bash
-env GOOS=linux GOARCH=amd64 go build
+go get github.com/mitchellh/gox
+gox -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$(git rev-list -1 HEAD) -X github.com/derekbekoe/convey/cmd.VersionGitTag=0.0.1" -os="linux darwin" -arch="amd64"
 ```
 See https://golang.org/doc/install/source#environment
 

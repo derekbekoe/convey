@@ -1,13 +1,26 @@
 sudo: false
+
 language: go
+
 go_import_path: github.com/derekbekoe/convey
+
 go:
   - 1.11.x
+
 os:
   - linux
   - osx
   - windows
+
 gobuild_args: -v -race -x -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$TRAVIS_COMMIT -X github.com/derekbekoe/convey/cmd.VersionGitTag=$TRAVIS_TAG"
+
+
+before_install:
+  - go get github.com/mitchellh/gox
+
 script:
   - go test ${gobuild_args} ./...
-  - go build ${gobuild_args} -o bin/convey
+  - pwd
+  - gox ${gobuild_args} -os="linux darwin windows" -arch="amd64"
+
+# TODO-DEREK Auto releases
