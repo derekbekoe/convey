@@ -59,9 +59,7 @@ var rootCmd = &cobra.Command{
 	Short: "A command-line tool that makes sharing pipes between machines easy.",
 	Long:  `A command-line tool that makes sharing pipes between machines easy.`,
 	Args:  positionalArgsValidator,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	Run: RootCommandFunc,
+	Run:   RootCommandFunc,
 }
 
 // RootCommandFunc is a handler for the bare application
