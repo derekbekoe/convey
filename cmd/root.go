@@ -21,10 +21,13 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
+	"reflect"
 	"strings"
+	"syscall"
 
 	homedir "github.com/mitchellh/go-homedir"
-	pubnub "github.com/pubnub/go"
+	stan "github.com/nats-io/go-nats-streaming"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -32,6 +35,12 @@ import (
 
 var cfgFile string
 var verbose bool
+
+const configKeyNatsURL = "NatsURL"
+const configKeyNatsClusterID = "NatsClusterID"
+
+// ETX is End Of Text Sequence
+var ETX = []byte{3}
 
 // positionalArgsValidator valids the positional args
 func positionalArgsValidator(cmd *cobra.Command, args []string) error {
@@ -44,19 +53,13 @@ func positionalArgsValidator(cmd *cobra.Command, args []string) error {
 	return errors.New("Invalid positional arguments")
 }
 
-// TODO-DEREK Add E2E encryption - https://www.pubnub.com/developers/tech/security/aes-encryption/
-
-// TODO-DEREK Figure out how to handle message ordering
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "convey",
 	Short: "A command-line tool that makes sharing pipes between machines easy.",
 	Long:  `A command-line tool that makes sharing pipes between machines easy.`,
 	Args:  positionalArgsValidator,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	Run: RootCommandFunc,
+	Run:   RootCommandFunc,
 }
 
 // RootCommandFunc is a handler for the bare application
@@ -80,185 +83,98 @@ func createChannelName() string {
 	return strings.Replace(u1.String(), "-", "", -1)
 }
 
-func getPubNub() *pubnub.PubNub {
-	config := pubnub.NewConfig()
-
-	subKey := viper.GetString("SubscribeKey")
-	pubKey := viper.GetString("PublishKey")
-
-	if subKey == "" || pubKey == "" {
-		log.Fatal("PubNub subscription and publish keys are required.")
+func getClientID(prefix string) string {
+	u1, err := uuid.NewV1()
+	if err != nil {
+		s := fmt.Sprintf("Failed to create client ID: %s\n", err)
+		log.Fatal(s)
 	}
-
-	config.SubscribeKey = subKey
-	config.PublishKey = pubKey
-
-	pn := pubnub.NewPubNub(config)
-	return pn
+	return fmt.Sprintf("%s-%s", prefix, u1.String())
 }
 
-// SubscribeModeFunc handles reading messages from the message service
-func SubscribeModeFunc(channelName string) {
-	log.Println("Subscribed to channel ", channelName)
+func connectToStan(clientID string) stan.Conn {
 
-	pn := getPubNub()
+	natsURL := viper.GetString(configKeyNatsURL)
+	natsClusterID := viper.GetString(configKeyNatsClusterID)
 
-	// TODO-DEREK Get history since channel began instead of last 100 only - https://support.pubnub.com/support/solutions/articles/14000043629-how-do-i-page-through-stored-messages-
-	res, status, _ := pn.History().Channel(channelName).Execute()
-
-	log.Println(status)
-
-	for _, element := range res.Messages {
-		if _, isEOF := element.Message.(map[string]interface{})["EOF"]; isEOF {
-			os.Exit(0)
-		}
-		fmt.Println(element.Message.(map[string]interface{})["msg"])
+	if natsURL == "" || natsClusterID == "" {
+		log.Fatalf("The configuration options '%s' and '%s' must be set.", configKeyNatsURL, configKeyNatsClusterID)
 	}
 
-	listener := pubnub.NewListener()
-	doneConnect := make(chan bool)
-	doneSubscribe := make(chan bool)
-
-	go func() {
-		for {
-			select {
-			case status := <-listener.Status:
-				switch status.Category {
-				case pubnub.PNDisconnectedCategory:
-					// This event happens when radio / connectivity is lost
-					log.Println("Messaging service lost connectivity")
-				case pubnub.PNConnectedCategory:
-					// Connect event. You can do stuff like publish, and know you'll get it.
-					// Or just use the connected event to confirm you are subscribed for
-					// UI / internal notifications, etc
-					log.Println("Messaging service connected")
-					doneConnect <- true
-				case pubnub.PNReconnectedCategory:
-					// Happens as part of our regular operation. This event happens when
-					// radio / connectivity is lost, then regained.
-					log.Println("Messaging service regained connectivity")
-				}
-			case message := <-listener.Message:
-				// Handle new message stored in message.message
-				if msg, ok := message.Message.(map[string]interface{}); ok {
-					if _, isEOF := msg["EOF"]; isEOF {
-						doneSubscribe <- true
-					} else {
-						fmt.Println(msg["msg"])
-						log.Printf("Got message: %s\n", msg["msg"])
-					}
-				}
-				log.Println("message.Message", message.Message)
-				log.Println("message.Timetoken", message.Timetoken)
-
-			case <-listener.Presence:
-				// handle presence
-			}
-		}
-	}()
-
-	pn.AddListener(listener)
-
-	pn.Subscribe().
-		Channels([]string{channelName}).
-		Execute()
-
-	<-doneConnect
-	<-doneSubscribe
+	sc, err := stan.Connect(
+		natsClusterID,
+		clientID,
+		stan.NatsURL(natsURL),
+		stan.SetConnectionLostHandler(func(_ stan.Conn, err error) {
+			log.Printf("Lost connection due to error - %s", err)
+		}))
+	if err != nil {
+		log.Fatalf("Failed to connect to streaming server due to error - %s", err)
+	}
+	return sc
 }
 
 // PublishModeFunc handles publishing messages to message service
 func PublishModeFunc() {
-
-	// TODO-DEREK Do not subscribe if all you're doing is publishing
-
-	pn := getPubNub()
-
-	listener := pubnub.NewListener()
-	doneConnect := make(chan bool)
-	donePublish := make(chan bool)
-
-	go func() {
-		for {
-			select {
-			case status := <-listener.Status:
-				switch status.Category {
-				case pubnub.PNDisconnectedCategory:
-					// This event happens when radio / connectivity is lost
-					log.Println("Messaging service lost connectivity")
-				case pubnub.PNConnectedCategory:
-					// Connect event. You can do stuff like publish, and know you'll get it.
-					// Or just use the connected event to confirm you are subscribed for
-					// UI / internal notifications, etc
-					log.Println("Messaging service connected")
-					doneConnect <- true
-				case pubnub.PNReconnectedCategory:
-					// Happens as part of our regular operation. This event happens when
-					// radio / connectivity is lost, then regained.
-					log.Println("Messaging service regained connectivity")
-				}
-			case message := <-listener.Message:
-				// Handle new message stored in message.message
-				if message.Channel != "" {
-					// Message has been received on channel group stored in
-					// message.Channel
-				} else {
-					// Message has been received on channel stored in
-					// message.Subscription
-				}
-				if msg, ok := message.Message.(map[string]interface{}); ok {
-					if _, isEOF := msg["EOF"]; isEOF {
-						donePublish <- true
-					} else {
-						// fmt.Println(msg["msg"])
-						// log.Printf("Got message: %s\n", msg["msg"])
-					}
-				}
-				log.Println("message.Message", message.Message)
-				log.Println("message.Timetoken", message.Timetoken)
-
-			case <-listener.Presence:
-				// handle presence
-			}
-		}
-	}()
-
-	pn.AddListener(listener)
+	clientID := getClientID("convey-pub")
+	sc := connectToStan(clientID)
 
 	channelName := createChannelName()
 
+	// Print channel to console for user to copy
 	fmt.Println(channelName)
-	log.Printf("Channel name %s\n", channelName)
+	log.Printf("Publishing to channel %s\n", channelName)
 
-	pn.Subscribe().
-		Channels([]string{channelName}).
-		Execute()
+	donePublish := make(chan bool)
 
-	<-doneConnect
+	// Handle Ctrl+C
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		donePublish <- true
+	}()
 
-	scanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
-	for scanner.Scan() {
-		line := scanner.Text()
-		msg := map[string]interface{}{
-			"msg": line,
+	go func() {
+		scanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
+		for scanner.Scan() {
+			line := scanner.Text()
+			sc.Publish(channelName, []byte(line))
 		}
-		// TODO-DEREK Publish multiple messages using the same channel instead of this current approach
-		_, _, err := pn.Publish().Channel(channelName).Message(msg).Execute()
-		if err != nil {
-			// Request processing failed.
-			// Handle message publish error
-			log.Printf("Failed to publish message: %s\n", err)
-		}
-	}
-
-	// TODO-DEREK On Ctrl+C, send EOF as well.
-
-	doneMsg := map[string]interface{}{
-		"EOF": true,
-	}
-	pn.Publish().Channel(channelName).Message(doneMsg).Execute()
+		donePublish <- true
+	}()
 
 	<-donePublish
+
+	sc.Publish(channelName, ETX)
+	sc.Close()
+}
+
+// SubscribeModeFunc handles reading messages from the message service
+func SubscribeModeFunc(channelName string) {
+	clientID := getClientID("convey-sub")
+	sc := connectToStan(clientID)
+
+	log.Printf("Subscribing to channel %s\n", channelName)
+
+	doneSubscribe := make(chan bool)
+
+	sub, subErr := sc.Subscribe(channelName, func(m *stan.Msg) {
+		if reflect.DeepEqual(m.Data, ETX) {
+			doneSubscribe <- true
+		} else {
+			fmt.Println(string(m.Data))
+		}
+	}, stan.DeliverAllAvailable())
+
+	if subErr != nil {
+		log.Fatalf("Failed to subscribe to channel %s due to error %s", channelName, subErr)
+	}
+
+	<-doneSubscribe
+
+	sub.Unsubscribe()
+	sc.Close()
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

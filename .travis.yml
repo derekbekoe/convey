@@ -1,4 +1,38 @@
+sudo: false
+
 language: go
+
+go_import_path: github.com/derekbekoe/convey
 
 go:
   - 1.11.x
+
+os:
+  - linux
+  - osx
+  - windows
+
+gobuild_args: -v -race -x -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$TRAVIS_COMMIT -X github.com/derekbekoe/convey/cmd.VersionGitTag=$TRAVIS_TAG"
+
+before_install:
+  - go get github.com/mitchellh/gox
+
+script:
+  - go test ${gobuild_args} ./...
+  - mkdir bin
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gox ${gobuild_args} -os="linux" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then gox ${gobuild_args} -os="darwin" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then gox ${gobuild_args} -os="windows" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"; fi
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: eIvDPtgI3JxtqsIPZ71nLb99CJyolcVRhKQtF+CWdzwJalhFsa2JwvmCZ3rM+f1I8t5vjDnULjCa8Xqdp3eiXPv9uR/VUiiQMj+UtrQTMzi2rAZujV5ZEfG871TaSvpALjmP1oqDzG6l94322sUV2CFgqXIDXgLEezmGaXW0SgOvdJc3+rfTinN4J/lEtCzinuQzXtbNJBO3MzYQLqOCJxK54zLNkGid+9HirseF5Ebe/t0XBUX+TCP3+dsy6tQMpQYQdo6b7EwDrknIgfof4KhAfCQFVlGRF/mrxxAZH4Dc0oQl7p9FxjCi/rDTzwTtKe3Ag6zc4a6Yw/FkFjMWeIHBuJN6McDY5br2KQD+FYnvIE2wuITRPIn8K5VzdkIBLEJ9LGPZ/KVlMLDkhvss9iRZOp8VALniAjPy9QJ1Dzpb4EGIAYmK2ZoYI8fi+jr6GiBbkrb7g/ggocJDURH86NVOwMdayTDzwlLPVizhTC7kxXX2kLnjQlbSGJdffLlpG1xbG/eLkwqU/NbiA5OKQDGA1+a3GKR1+aJxH35HF1JOtdaJgF8nq4sqNz4Zr6IB1E8j/n4dqixUjM1PF/th4Q04CdyBQ2k6Wu6Xwl/XTuCxZLdCqAwFiHQMtacah8bWRnzso8XKZLN3qKoGN6ia/ybpxaxanQGiTsE/V2vkA5Q=
+  file:
+  - bin/convey_windows_amd64.exe
+  - bin/convey_darwin_amd64
+  - bin/convey_linux_amd64
+  on:
+    repo: derekbekoe/convey
+    tags: true
