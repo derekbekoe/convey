@@ -21,7 +21,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
+	"reflect"
 	"strings"
+	"syscall"
 
 	homedir "github.com/mitchellh/go-homedir"
 	stan "github.com/nats-io/go-nats-streaming"
@@ -33,8 +36,12 @@ import (
 var cfgFile string
 var verbose bool
 
+// TODO-DEREK Get this from user config
 const natsURL = "nats://localhost:4223"
 const clusterID = "test-cluster"
+
+// ETX is End Of Text Sequence
+var ETX = []byte{3}
 
 // positionalArgsValidator valids the positional args
 func positionalArgsValidator(cmd *cobra.Command, args []string) error {
@@ -46,10 +53,6 @@ func positionalArgsValidator(cmd *cobra.Command, args []string) error {
 	}
 	return errors.New("Invalid positional arguments")
 }
-
-// TODO-DEREK Add E2E encryption - https://www.pubnub.com/developers/tech/security/aes-encryption/
-
-// TODO-DEREK Figure out how to handle message ordering
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -83,76 +86,89 @@ func createChannelName() string {
 	return strings.Replace(u1.String(), "-", "", -1)
 }
 
-// PublishModeFunc handles publishing messages to message service
-func PublishModeFunc() {
-	clientID := "convey-pub-1"
+func getClientID(prefix string) string {
+	u1, err := uuid.NewV1()
+	if err != nil {
+		s := fmt.Sprintf("Failed to create client ID: %s\n", err)
+		log.Fatal(s)
+	}
+	return fmt.Sprintf("%s-%s", prefix, u1.String())
+}
+
+func connectToStan(clientID string) stan.Conn {
 	sc, err := stan.Connect(
 		clusterID,
 		clientID,
-		stan.NatsURL(natsURL))
-
+		stan.NatsURL(natsURL),
+		stan.SetConnectionLostHandler(func(_ stan.Conn, err error) {
+			log.Printf("Lost connection due to error - %s", err)
+		}))
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalf("Failed to connect to streaming server due to error - %s", err)
 	}
+	return sc
+}
+
+// PublishModeFunc handles publishing messages to message service
+func PublishModeFunc() {
+	clientID := getClientID("convey-pub")
+	sc := connectToStan(clientID)
 
 	channelName := createChannelName()
 
+	// Print channel to console for user to copy
 	fmt.Println(channelName)
-	log.Printf("Channel name %s\n", channelName)
+	log.Printf("Publishing to channel %s\n", channelName)
 
-	// Wait a bit as we don't support history yet
-	// time.Sleep(10 * time.Second)
+	donePublish := make(chan bool)
 
-	// Simple Synchronous Publisher
-	log.Printf("About to send messages\n")
-	// sc.Publish(channelName, []byte("Hello World")) // does not return until an ack has been received from NATS Streaming
+	// Handle Ctrl+C
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		donePublish <- true
+	}()
 
-	scanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
-	for scanner.Scan() {
-		line := scanner.Text()
-		// TODO-DEREK Publish multiple messages using the same channel instead of this current approach
-		sc.Publish(channelName, []byte(line))
-	}
+	go func() {
+		scanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
+		for scanner.Scan() {
+			line := scanner.Text()
+			sc.Publish(channelName, []byte(line))
+		}
+		donePublish <- true
+	}()
 
-	// TODO-DEREK On Ctrl+C, send EOF as well.
+	<-donePublish
 
-	// TODO-DEREK Send proper EOF message
-	sc.Publish(channelName, []byte("EOF"))
-
-	// Close connection
+	sc.Publish(channelName, ETX)
 	sc.Close()
 }
 
 // SubscribeModeFunc handles reading messages from the message service
 func SubscribeModeFunc(channelName string) {
-	log.Println("Subscribing to channel ", channelName)
+	clientID := getClientID("convey-sub")
+	sc := connectToStan(clientID)
 
-	clientID := "convey-sub-1"
-	sc, err := stan.Connect(
-		clusterID,
-		clientID,
-		stan.NatsURL(natsURL))
+	log.Printf("Subscribing to channel %s\n", channelName)
 
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	doneSubscribe := make(chan bool)
 
-	donePublish := make(chan bool)
-
-	// Simple Async Subscriber
-	sub, _ := sc.Subscribe(channelName, func(m *stan.Msg) {
-		log.Printf("Received a message: %s\n", string(m.Data))
-		fmt.Println(string(m.Data))
+	sub, subErr := sc.Subscribe(channelName, func(m *stan.Msg) {
+		if reflect.DeepEqual(m.Data, ETX) {
+			doneSubscribe <- true
+		} else {
+			fmt.Println(string(m.Data))
+		}
 	}, stan.DeliverAllAvailable())
 
-	<-donePublish
+	if subErr != nil {
+		log.Fatalf("Failed to subscribe to channel %s due to error %s", channelName, subErr)
+	}
 
-	// Unsubscribe
+	<-doneSubscribe
+
 	sub.Unsubscribe()
-
-	// Close connection
 	sc.Close()
 }
 
