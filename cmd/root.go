@@ -36,9 +36,8 @@ import (
 var cfgFile string
 var verbose bool
 
-// TODO-DEREK Get this from user config
-const natsURL = "nats://localhost:4223"
-const clusterID = "test-cluster"
+const configKeyNatsURL = "NatsURL"
+const configKeyNatsClusterID = "NatsClusterID"
 
 // ETX is End Of Text Sequence
 var ETX = []byte{3}
@@ -96,8 +95,16 @@ func getClientID(prefix string) string {
 }
 
 func connectToStan(clientID string) stan.Conn {
+
+	natsURL := viper.GetString(configKeyNatsURL)
+	natsClusterID := viper.GetString(configKeyNatsClusterID)
+
+	if natsURL == "" || natsClusterID == "" {
+		log.Fatalf("The configuration options '%s' and '%s' must be set.", configKeyNatsURL, configKeyNatsClusterID)
+	}
+
 	sc, err := stan.Connect(
-		clusterID,
+		natsClusterID,
 		clientID,
 		stan.NatsURL(natsURL),
 		stan.SetConnectionLostHandler(func(_ stan.Conn, err error) {

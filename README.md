@@ -4,9 +4,29 @@ A command-line tool that makes sharing pipes between machines easy.
 
 ## Usage
 
+In Terminal 1:
 ```bash
 echo "Hello world" | convey
+21f50fba373e11e9990a72000872a940
 ```
+
+In Terminal 2:
+```bash
+convey 21f50fba373e11e9990a72000872a940
+Hello world
+```
+
+## Configuration
+
+By default, configuration is loaded from `$HOME/.convey.yaml`.
+
+This is an example of `.convey.yaml`:
+```yaml
+NatsURL: nats://localhost:4223
+NatsClusterID: test-cluster
+```
+
+Use the --config flag on the command line to change the config file if needed.
 
 ## Development
 ```bash
