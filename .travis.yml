@@ -11,7 +11,7 @@ os:
 gobuild_args: -x -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$TRAVIS_COMMIT -X github.com/derekbekoe/convey/cmd.VersionGitTag=$TRAVIS_TAG"
 
 script:
-  - go test -v ./...
-  - go build -v -o bin/convey
+  - go test -v ${gobuild_args} ./...
+  - go build -v ${gobuild_args} -o bin/convey
 
 sudo: false
