@@ -8,6 +8,12 @@ get.convey.sh/linux
 
 get.convey.sh/windows
 
+wget -qO convey https://github.com/derekbekoe/convey/releases/download/VERSION/PLATFORM
+
+e.g.:
+wget -qO convey https://github.com/derekbekoe/convey/releases/download/v0.0.1/convey_linux_amd64
+wget -qO convey https://github.com/derekbekoe/convey/releases/download/v0.0.1/convey_darwin_amd64
+
 This will download the latest release for your platform.
 
 ## Usage
