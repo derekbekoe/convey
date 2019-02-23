@@ -45,5 +45,5 @@ See https://golang.org/doc/install/source#environment
 ## Startings NATS Streaming Server
 
 ```bash
-docker run -p 4223:4223 -p 8223:8223 nats-streaming:linux -p 4223 -m 8223
+docker run -p 4223:4223 -p 8223:8223 nats-streaming -p 4223 -m 8223
 ```
