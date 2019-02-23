@@ -2,6 +2,14 @@
 
 A command-line tool that makes sharing pipes between machines easy.
 
+## Download
+
+get.convey.sh/linux
+
+get.convey.sh/windows
+
+This will download the latest release for your platform.
+
 ## Usage
 
 In Terminal 1:
@@ -36,14 +44,26 @@ go run main.go
 go build -o bin/convey
 ```
 
+```bash
+go build -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$(git rev-list -1 HEAD) -X github.com/derekbekoe/convey/cmd.VersionGitTag=VERSION" -o bin/convey
+```
+
 Cross-compile
 ```bash
 env GOOS=linux GOARCH=amd64 go build
 ```
 See https://golang.org/doc/install/source#environment
 
-## Startings NATS Streaming Server
+## Starting NATS Streaming Server
 
 ```bash
 docker run -p 4223:4223 -p 8223:8223 nats-streaming -p 4223 -m 8223
 ```
+
+## FAQ
+
+**How do I try it out?**
+
+Start the local container, download convey, specify the configuration then run.
+
+If you'd like to share between multiple devices, host the server in a location where your devices can access.
