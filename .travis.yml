@@ -12,17 +12,15 @@ os:
   - osx
   - windows
 
-gobuild_args: -v -race -x -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$TRAVIS_COMMIT -X github.com/derekbekoe/convey/cmd.VersionGitTag=$TRAVIS_TAG"
-
 before_install:
   - go get github.com/mitchellh/gox
 
 script:
-  - go test ${gobuild_args} ./...
+  - go test -v ./...
   - mkdir bin
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gox ${gobuild_args} -os="linux" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then gox ${gobuild_args} -os="darwin" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then gox ${gobuild_args} -os="windows" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"; fi
+  - GOX_OS_NAME=$TRAVIS_OS_NAME
+  - if [[ "$GOX_OS_NAME" == "osx" ]]; then GOX_OS_NAME="darwin"; fi
+  - gox -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$TRAVIS_COMMIT -X github.com/derekbekoe/convey/cmd.VersionGitTag=$TRAVIS_TAG" -os="$GOX_OS_NAME" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
 
 deploy:
   provider: releases
