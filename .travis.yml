@@ -14,13 +14,14 @@ os:
 
 gobuild_args: -v -race -x -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$TRAVIS_COMMIT -X github.com/derekbekoe/convey/cmd.VersionGitTag=$TRAVIS_TAG"
 
-
 before_install:
   - go get github.com/mitchellh/gox
 
 script:
   - go test ${gobuild_args} ./...
   - pwd
-  - gox ${gobuild_args} -os="linux darwin windows" -arch="amd64"
+  - mkdir bin
+  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then gox ${gobuild_args} -os="linux darwin" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then gox ${gobuild_args} -os="windows" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"; fi
 
 # TODO-DEREK Auto releases
