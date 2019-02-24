@@ -9,14 +9,18 @@ get.convey.sh/windows
 
 Install on Linux:
 ```bash
-wget -qO convey https://github.com/derekbekoe/convey/releases/download/v0.0.2/convey_linux_amd64
+wget -qO convey https://github.com/derekbekoe/convey/releases/latest/download/convey_linux_amd64
+chmod +x ~/bin/convey
 ```
 
 Install on Mac OS:
 ```bash
-wget -qO ~/bin/convey https://github.com/derekbekoe/convey/releases/download/v0.0.2/convey_darwin_amd64
+wget -qO ~/bin/convey https://github.com/derekbekoe/convey/releases/latest/download/convey_darwin_amd64
 chmod +x ~/bin/convey
 ```
+
+Install on Windows:
+Download from https://github.com/derekbekoe/convey/releases/latest/download/convey_windows_amd64.exe
 
 This will download the latest release for your platform.
 
