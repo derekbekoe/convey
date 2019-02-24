@@ -2,27 +2,26 @@
 
 A command-line tool that makes sharing pipes between machines easy.
 
-## Download
+## Install
 
-get.convey.sh/linux
-get.convey.sh/windows
-
-Install on Linux:
+**Install on Linux:**
 ```bash
-wget -qO convey https://github.com/derekbekoe/convey/releases/latest/download/convey_linux_amd64
+wget -qO convey https://get.convey.sh/linux
 chmod +x ~/bin/convey
 ```
 
-Install on Mac OS:
+**Install on Mac OS:**
 ```bash
-wget -qO ~/bin/convey https://github.com/derekbekoe/convey/releases/latest/download/convey_darwin_amd64
+wget -qO ~/bin/convey https://get.convey.sh/macos
 chmod +x ~/bin/convey
 ```
 
-Install on Windows:
-Download from https://github.com/derekbekoe/convey/releases/latest/download/convey_windows_amd64.exe
+**Install on Windows:**  
+> Download from https://get.convey.sh/windows
 
-This will download the latest release for your platform.
+This will download the latest release for your platform.  
+Builds are available for the `amd64` architecture.  
+To directly from GitHub, visit https://github.com/derekbekoe/convey/releases/latest.  
 
 ## Usage
 
