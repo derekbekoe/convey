@@ -42,6 +42,11 @@ const configKeyNatsClusterID = "NatsClusterID"
 // ETX is End Of Text Sequence
 var ETX = []byte{3}
 
+func errorExit(msg string) {
+	fmt.Fprintln(os.Stderr, msg)
+	os.Exit(1)
+}
+
 // positionalArgsValidator valids the positional args
 func positionalArgsValidator(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
@@ -69,7 +74,7 @@ func RootCommandFunc(cmd *cobra.Command, args []string) {
 	} else if len(args) == 1 {
 		SubscribeModeFunc(args[0])
 	} else {
-		log.Fatal("Too many args")
+		errorExit("Too many args")
 	}
 }
 
@@ -77,7 +82,7 @@ func createChannelName() string {
 	u1, err := uuid.NewV1()
 	if err != nil {
 		s := fmt.Sprintf("Failed to create channel name: %s\n", err)
-		log.Fatal(s)
+		errorExit(s)
 	}
 	// Remove dashes from UUID to make copy-paste easier in terminal
 	return strings.Replace(u1.String(), "-", "", -1)
@@ -87,7 +92,7 @@ func getClientID(prefix string) string {
 	u1, err := uuid.NewV1()
 	if err != nil {
 		s := fmt.Sprintf("Failed to create client ID: %s\n", err)
-		log.Fatal(s)
+		errorExit(s)
 	}
 	return fmt.Sprintf("%s-%s", prefix, u1.String())
 }
@@ -98,7 +103,8 @@ func connectToStan(clientID string) stan.Conn {
 	natsClusterID := viper.GetString(configKeyNatsClusterID)
 
 	if natsURL == "" || natsClusterID == "" {
-		log.Fatalf("The configuration options '%s' and '%s' must be set.", configKeyNatsURL, configKeyNatsClusterID)
+		s := fmt.Sprintf("The configuration options '%s' and '%s' must be set.", configKeyNatsURL, configKeyNatsClusterID)
+		errorExit(s)
 	}
 
 	sc, err := stan.Connect(
@@ -109,7 +115,8 @@ func connectToStan(clientID string) stan.Conn {
 			log.Printf("Lost connection due to error - %s", err)
 		}))
 	if err != nil {
-		log.Fatalf("Failed to connect to streaming server due to error - %s", err)
+		s := fmt.Sprintf("Failed to connect to streaming server due to error - %s", err)
+		errorExit(s)
 	}
 	return sc
 }
@@ -168,7 +175,8 @@ func SubscribeModeFunc(channelName string) {
 	}, stan.DeliverAllAvailable())
 
 	if subErr != nil {
-		log.Fatalf("Failed to subscribe to channel %s due to error %s", channelName, subErr)
+		s := fmt.Sprintf("Failed to subscribe to channel %s due to error %s", channelName, subErr)
+		errorExit(s)
 	}
 
 	<-doneSubscribe
