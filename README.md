@@ -39,6 +39,11 @@ Hello world
 
 ## Configuration
 
+Set configuration with the `convey configure` command.
+```bash
+convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
+```
+
 By default, configuration is loaded from `$HOME/.convey.yaml`.
 
 This is an example of `.convey.yaml`:
@@ -57,17 +62,11 @@ go run main.go
 go build -o bin/convey
 ```
 
-## Platform Builds
-```bash
-go get github.com/mitchellh/gox
-gox -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$(git rev-list -1 HEAD) -X github.com/derekbekoe/convey/cmd.VersionGitTag=VERSION" -os="linux darwin" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
-```
-See https://golang.org/doc/install/source#environment
-
-## Starting NATS Streaming Server
+## Host your own NATS Streaming Server
 
 ```bash
-docker run -p 4223:4223 -p 8223:8223 nats-streaming:linux -p 4223 -m 8223
+docker run -p 4222:4222 nats-streaming:linux
+convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
 ```
 
 OR
@@ -75,8 +74,16 @@ OR
 **Deploy to Azure Container Instances**
 We only include this as an illustration to keep the command simple as traffic is not encrypted.
 ```bash
-az container create --image nats-streaming:linux --ports 4222 8222 --ip-address Public -g RG -n nats1
+az container create --image nats-streaming:linux --ports 4222 --ip-address Public -g RG -n nats1
+convey configure --nats-url nats://<IPADDRESS>:4222 --nats-cluster test-cluster
 ```
+
+## Platform Builds
+```bash
+go get github.com/mitchellh/gox
+gox -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$(git rev-list -1 HEAD) -X github.com/derekbekoe/convey/cmd.VersionGitTag=VERSION" -os="linux darwin" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
+```
+See https://golang.org/doc/install/source#environment
 
 ## FAQ
 

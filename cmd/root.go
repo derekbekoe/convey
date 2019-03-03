@@ -103,7 +103,9 @@ func connectToStan(clientID string) stan.Conn {
 	natsClusterID := viper.GetString(configKeyNatsClusterID)
 
 	if natsURL == "" || natsClusterID == "" {
-		s := fmt.Sprintf("The configuration options '%s' and '%s' must be set.", configKeyNatsURL, configKeyNatsClusterID)
+		s := fmt.Sprintf("The configuration options '%s' and '%s' are not set. Use `convey configure` to set.",
+			configKeyNatsURL,
+			configKeyNatsClusterID)
 		errorExit(s)
 	}
 
@@ -189,8 +191,7 @@ func SubscribeModeFunc(channelName string) {
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		errorExit(err.Error())
 	}
 }
 
@@ -214,8 +215,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 
 		// Search config in home directory with name ".convey" (without extension).

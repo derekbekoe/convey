@@ -2,41 +2,59 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"path"
 
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var natsUrl string
-var natsClusterId string
+var natsURL string
+var natsClusterID string
 var forceWrite bool
 
 func init() {
 	rootCmd.AddCommand(configureCmd)
-	configureCmd.PersistentFlags().StringVar(&natsUrl, "nats-url", "", "NATS server url")
-	configureCmd.PersistentFlags().StringVar(&natsClusterId, "nats-cluster", "", "NATS cluster id")
-	configureCmd.PersistentFlags().BoolVar(&forceWrite, "force", false, "Overwrite current configuration")
+	configureCmd.PersistentFlags().StringVar(&natsURL, "nats-url", "", "NATS server url")
+	configureCmd.PersistentFlags().StringVar(&natsClusterID, "nats-cluster", "", "NATS cluster id")
+	configureCmd.PersistentFlags().BoolVar(&forceWrite, "overwrite", false, "Overwrite current configuration")
 }
 
 var configureCmd = &cobra.Command{
 	Use:   "configure",
 	Short: "Configure Convey",
-	Run: func(cmd *cobra.Command, args []string) {
-		viper.SetDefault("NatsURL", natsUrl)
-		viper.SetDefault("NatsClusterID", natsClusterId)
-		if forceWrite {
-			err := viper.WriteConfig()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		} else {
-			err := viper.SafeWriteConfig()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+	Run:   ConfigureCommandFunc,
+}
+
+// ConfigureCommandFunc is a handler for the configure command
+func ConfigureCommandFunc(cmd *cobra.Command, args []string) {
+	viper.Set(configKeyNatsURL, natsURL)
+	viper.Set(configKeyNatsClusterID, natsClusterID)
+
+	// If a config file is found, read it in.
+	configFileExists := false
+	if err := viper.ReadInConfig(); err == nil {
+		configFileExists = true
+	}
+
+	// If config file doesn't exist and it hasn't been set in viper, set it
+	if !configFileExists && viper.ConfigFileUsed() == "" {
+		home, err := homedir.Dir()
+		if err != nil {
+			errorExit(err.Error())
 		}
-	},
+		viper.SetConfigFile(path.Join(home, ".convey.yaml"))
+	}
+
+	configFilePath := viper.ConfigFileUsed()
+
+	if forceWrite || !configFileExists {
+		err := viper.WriteConfigAs(configFilePath)
+		if err != nil {
+			errorExit(err.Error())
+		}
+	} else {
+		msg := fmt.Sprintf("Config file exists. Use --overwrite to overwrite the config file at %s", configFilePath)
+		errorExit(msg)
+	}
 }
