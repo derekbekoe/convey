@@ -26,6 +26,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/docker/docker/pkg/namesgenerator"
 	homedir "github.com/mitchellh/go-homedir"
 	stan "github.com/nats-io/go-nats-streaming"
 	uuid "github.com/satori/go.uuid"
@@ -38,9 +39,15 @@ var verbose bool
 
 const configKeyNatsURL = "NatsURL"
 const configKeyNatsClusterID = "NatsClusterID"
+const configKeyUseShortName = "UseShortName"
 
 // ETX is End Of Text Sequence
 var ETX = []byte{3}
+
+func errorExit(msg string) {
+	fmt.Fprintln(os.Stderr, msg)
+	os.Exit(1)
+}
 
 // positionalArgsValidator valids the positional args
 func positionalArgsValidator(cmd *cobra.Command, args []string) error {
@@ -69,25 +76,29 @@ func RootCommandFunc(cmd *cobra.Command, args []string) {
 	} else if len(args) == 1 {
 		SubscribeModeFunc(args[0])
 	} else {
-		log.Fatal("Too many args")
+		errorExit("Too many args")
 	}
 }
 
-func createChannelName() string {
+func createChannelNameUUID() string {
 	u1, err := uuid.NewV1()
 	if err != nil {
 		s := fmt.Sprintf("Failed to create channel name: %s\n", err)
-		log.Fatal(s)
+		errorExit(s)
 	}
 	// Remove dashes from UUID to make copy-paste easier in terminal
 	return strings.Replace(u1.String(), "-", "", -1)
+}
+
+func createChannelNameShort() string {
+	return namesgenerator.GetRandomName(0)
 }
 
 func getClientID(prefix string) string {
 	u1, err := uuid.NewV1()
 	if err != nil {
 		s := fmt.Sprintf("Failed to create client ID: %s\n", err)
-		log.Fatal(s)
+		errorExit(s)
 	}
 	return fmt.Sprintf("%s-%s", prefix, u1.String())
 }
@@ -98,7 +109,10 @@ func connectToStan(clientID string) stan.Conn {
 	natsClusterID := viper.GetString(configKeyNatsClusterID)
 
 	if natsURL == "" || natsClusterID == "" {
-		log.Fatalf("The configuration options '%s' and '%s' must be set.", configKeyNatsURL, configKeyNatsClusterID)
+		s := fmt.Sprintf("The configuration options '%s' and '%s' are not set. Use `convey configure` to set.",
+			configKeyNatsURL,
+			configKeyNatsClusterID)
+		errorExit(s)
 	}
 
 	sc, err := stan.Connect(
@@ -109,7 +123,8 @@ func connectToStan(clientID string) stan.Conn {
 			log.Printf("Lost connection due to error - %s", err)
 		}))
 	if err != nil {
-		log.Fatalf("Failed to connect to streaming server due to error - %s", err)
+		s := fmt.Sprintf("Failed to connect to streaming server due to error - %s", err)
+		errorExit(s)
 	}
 	return sc
 }
@@ -119,7 +134,13 @@ func PublishModeFunc() {
 	clientID := getClientID("convey-pub")
 	sc := connectToStan(clientID)
 
-	channelName := createChannelName()
+	useShortName := viper.GetBool(configKeyUseShortName)
+	channelName := ""
+	if useShortName {
+		channelName = createChannelNameShort()
+	} else {
+		channelName = createChannelNameUUID()
+	}
 
 	// Print channel to console for user to copy
 	fmt.Println(channelName)
@@ -168,7 +189,8 @@ func SubscribeModeFunc(channelName string) {
 	}, stan.DeliverAllAvailable())
 
 	if subErr != nil {
-		log.Fatalf("Failed to subscribe to channel %s due to error %s", channelName, subErr)
+		s := fmt.Sprintf("Failed to subscribe to channel %s due to error %s", channelName, subErr)
+		errorExit(s)
 	}
 
 	<-doneSubscribe
@@ -181,8 +203,7 @@ func SubscribeModeFunc(channelName string) {
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		errorExit(err.Error())
 	}
 }
 
@@ -206,8 +227,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			errorExit(err.Error())
 		}
 
 		// Search config in home directory with name ".convey" (without extension).
