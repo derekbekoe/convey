@@ -11,12 +11,14 @@ import (
 
 var natsURL string
 var natsClusterID string
+var useShortName bool
 var forceWrite bool
 
 func init() {
 	rootCmd.AddCommand(configureCmd)
 	configureCmd.PersistentFlags().StringVar(&natsURL, "nats-url", "", "NATS server url")
 	configureCmd.PersistentFlags().StringVar(&natsClusterID, "nats-cluster", "", "NATS cluster id")
+	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-name", false, "Use short channel names. Channel conflicts may occur.")
 	configureCmd.PersistentFlags().BoolVar(&forceWrite, "overwrite", false, "Overwrite current configuration")
 }
 
@@ -30,6 +32,7 @@ var configureCmd = &cobra.Command{
 func ConfigureCommandFunc(cmd *cobra.Command, args []string) {
 	viper.Set(configKeyNatsURL, natsURL)
 	viper.Set(configKeyNatsClusterID, natsClusterID)
+	viper.Set(configKeyUseShortName, useShortName)
 
 	// If a config file is found, read it in.
 	configFileExists := false

@@ -26,6 +26,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/docker/docker/pkg/namesgenerator"
 	homedir "github.com/mitchellh/go-homedir"
 	stan "github.com/nats-io/go-nats-streaming"
 	uuid "github.com/satori/go.uuid"
@@ -38,6 +39,7 @@ var verbose bool
 
 const configKeyNatsURL = "NatsURL"
 const configKeyNatsClusterID = "NatsClusterID"
+const configKeyUseShortName = "UseShortName"
 
 // ETX is End Of Text Sequence
 var ETX = []byte{3}
@@ -78,7 +80,7 @@ func RootCommandFunc(cmd *cobra.Command, args []string) {
 	}
 }
 
-func createChannelName() string {
+func createChannelNameUUID() string {
 	u1, err := uuid.NewV1()
 	if err != nil {
 		s := fmt.Sprintf("Failed to create channel name: %s\n", err)
@@ -86,6 +88,10 @@ func createChannelName() string {
 	}
 	// Remove dashes from UUID to make copy-paste easier in terminal
 	return strings.Replace(u1.String(), "-", "", -1)
+}
+
+func createChannelNameShort() string {
+	return namesgenerator.GetRandomName(0)
 }
 
 func getClientID(prefix string) string {
@@ -128,7 +134,13 @@ func PublishModeFunc() {
 	clientID := getClientID("convey-pub")
 	sc := connectToStan(clientID)
 
-	channelName := createChannelName()
+	useShortName := viper.GetBool(configKeyUseShortName)
+	channelName := ""
+	if useShortName {
+		channelName = createChannelNameShort()
+	} else {
+		channelName = createChannelNameUUID()
+	}
 
 	// Print channel to console for user to copy
 	fmt.Println(channelName)
