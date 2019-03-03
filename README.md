@@ -67,7 +67,15 @@ See https://golang.org/doc/install/source#environment
 ## Starting NATS Streaming Server
 
 ```bash
-docker run -p 4223:4223 -p 8223:8223 nats-streaming -p 4223 -m 8223
+docker run -p 4223:4223 -p 8223:8223 nats-streaming:linux -p 4223 -m 8223
+```
+
+OR
+
+**Deploy to Azure Container Instances**
+We only include this as an illustration to keep the command simple as traffic is not encrypted.
+```bash
+az container create --image nats-streaming:linux --ports 4222 8222 --ip-address Public -g RG -n nats1
 ```
 
 ## FAQ
