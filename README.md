@@ -71,8 +71,6 @@ docker run -p 4222:4222 nats-streaming:linux
 convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
 ```
 
-OR
-
 **Deploy to an Azure Container Instance**
 
 note: We only include this as an illustration to keep the command simple as traffic is not encrypted.
