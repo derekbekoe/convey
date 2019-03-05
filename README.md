@@ -79,6 +79,15 @@ az container create --image nats-streaming:linux --ports 4222 --ip-address Publi
 convey configure --nats-url nats://<IPADDRESS>:4222 --nats-cluster test-cluster
 ```
 
+**TLS**
+
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem -subj "/C=US/ST=Texas/L=Austin/O=AwesomeThings/CN=localhost"
+
+```
+cd /Users/derekb/go/src/github.com/derekbekoe/convey
+docker run -p 4222:4222 -v $(pwd)/certs:/certs nats-streaming:linux -tls_client_cert /certs/cert.pem -tls_client_key /certs/key.pem  --tlscert /certs/cert.pem --tlskey /certs/key.pem --tlsverify=false --tls=false -secure=false
+```
+
 ## Platform Builds
 ```bash
 go get github.com/mitchellh/gox
