@@ -120,12 +120,8 @@ TODO
 
 **Demo**
 
-On VM:
 ```bash
 docker run nats-streaming:linux -ns tls://demo.nats.io:4443 -cid test-cluster1 -mc 0 -D
-```
-
-```bash
 convey configure --nats-url tls://demo.nats.io:4443 --nats-cluster test-cluster1 --overwrite
 ```
 

@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"bufio"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -47,6 +46,9 @@ var cfgFile string
 
 // Whether to log verbose output
 var verbose bool
+
+// Whether non-tls connection should be used for NATS connection
+var useUnsecure bool
 
 // etx is an identifier for End Of Text Sequence
 var etx = []byte{3}
@@ -91,8 +93,8 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.convey.yaml)")
-
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	rootCmd.PersistentFlags().BoolVar(&useUnsecure, "unsecure", false, "use unsecured connection (for testing purposes only)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -158,7 +160,7 @@ func getClientID(prefix string) string {
 	return fmt.Sprintf("%s-%s", prefix, u.String())
 }
 
-func connectToStan(clientID string) stan.Conn {
+func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 
 	natsURL := viper.GetString(configKeyNatsURL)
 	natsClusterID := viper.GetString(configKeyNatsClusterID)
@@ -170,18 +172,23 @@ func connectToStan(clientID string) stan.Conn {
 		errorExit(s)
 	}
 
-	a := tls.Config{InsecureSkipVerify: false}
-	nc, err1 := nats.Connect(natsURL, nats.Secure(&a))
+	natsSecureOpt := nats.Secure()
+
+	if useUnsecure {
+		log.Printf("Using unsecure connection to server")
+		natsSecureOpt = nil
+	}
+
+	natsConn, err1 := nats.Connect(natsURL, natsSecureOpt)
 	if err1 != nil {
 		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err1)
 		errorExit(s)
 	}
 
-	sc, err := stan.Connect(
+	stanConn, err := stan.Connect(
 		natsClusterID,
 		clientID,
-		stan.NatsConn(nc),
-		// stan.NatsURL(natsURL),
+		stan.NatsConn(natsConn),
 		stan.SetConnectionLostHandler(func(_ stan.Conn, err error) {
 			log.Printf("Lost connection due to error - %s", err)
 		}))
@@ -189,13 +196,14 @@ func connectToStan(clientID string) stan.Conn {
 		s := fmt.Sprintf("Failed to connect to streaming server due to error - %s", err)
 		errorExit(s)
 	}
-	return sc
+
+	return stanConn, natsConn
 }
 
 // publishModeFunc handles publishing messages to message service
 func publishModeFunc() {
 	clientID := getClientID("convey-pub")
-	sc := connectToStan(clientID)
+	stanConn, natsConn := connectToStan(clientID)
 
 	useShortName := viper.GetBool(configKeyUseShortName)
 	channelName := ""
@@ -223,27 +231,28 @@ func publishModeFunc() {
 		scanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
 		for scanner.Scan() {
 			line := scanner.Text()
-			sc.Publish(channelName, []byte(line))
+			stanConn.Publish(channelName, []byte(line))
 		}
 		donePublish <- true
 	}()
 
 	<-donePublish
 
-	sc.Publish(channelName, etx)
-	sc.Close()
+	stanConn.Publish(channelName, etx)
+	stanConn.Close()
+	natsConn.Close()
 }
 
 // subscribeModeFunc handles reading messages from the message service
 func subscribeModeFunc(channelName string) {
 	clientID := getClientID("convey-sub")
-	sc := connectToStan(clientID)
+	stanConn, natsConn := connectToStan(clientID)
 
 	log.Printf("Subscribing to channel %s\n", channelName)
 
 	doneSubscribe := make(chan bool)
 
-	sub, subErr := sc.Subscribe(channelName, func(m *stan.Msg) {
+	sub, subErr := stanConn.Subscribe(channelName, func(m *stan.Msg) {
 		if reflect.DeepEqual(m.Data, etx) {
 			doneSubscribe <- true
 		} else {
@@ -259,5 +268,6 @@ func subscribeModeFunc(channelName string) {
 	<-doneSubscribe
 
 	sub.Unsubscribe()
-	sc.Close()
+	stanConn.Close()
+	natsConn.Close()
 }
