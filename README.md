@@ -124,7 +124,7 @@ See https://golang.org/doc/install/source#environment
 
 # Examples
 
-Click to expand.
+Click to expand each gif.
 
 <div style="text-align: center">
 <img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_top.gif" alt="Convey with Top" border="0" width="445">
