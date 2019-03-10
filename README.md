@@ -8,7 +8,7 @@
 <a href="https://travis-ci.org/derekbekoe/convey"><img src="https://img.shields.io/travis/derekbekoe/convey/master.svg?style=flat-square&logo=travis" alt="Build Status"></a>
 </p>
 <div align="center">
-<p><strong>A command-line tool that makes sharing pipes between machines easy.</strong></p>
+<p>A command-line tool that makes sharing pipes between machines easy.</p>
 <p>Learn more at <a href="https://blog.derekbekoe.com/convey"><em>Convey: Pipe between machines</em></a></p>
 </div>
 
