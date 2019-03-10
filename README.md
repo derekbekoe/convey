@@ -1,15 +1,16 @@
 <p align="center">
   <img 
     src="https://derekb.blob.core.windows.net/public/convey_1.svg" 
-    width="315" height="120" border="0" alt="Convey">
+    width="400" border="0" alt="Convey">
 </p>
 <p align="center">
 <a href="https://github.com/derekbekoe/convey/releases"><img src="https://img.shields.io/github/release/derekbekoe/convey.svg" alt="Version"></a>
 <a href="https://travis-ci.org/derekbekoe/convey"><img src="https://travis-ci.org/derekbekoe/convey.svg?branch=master" alt="Build Status"></a>
 </p>
-<p align="center">
-A command-line tool that makes sharing pipes between machines easy.
-</p>
+<div align="center">
+<p><strong>A command-line tool that makes sharing pipes between machines easy.</strong></p>
+<p>Learn more at <a href="https://blog.derekbekoe.com/convey"><em>Convey: Pipe between machines</em></a></p>
+</div>
 
 
 ```bash
@@ -30,8 +31,6 @@ Hello world
 - Supports Linux, macOS and Windows.
 - No dependencies to install.
 - Powered by [NATS](https://nats.io/), a CNCF project.
-
-Read more at [Convey: Pipe between machines](https://blog.derekbekoe.com/convey)
 
 # Getting Started
 
