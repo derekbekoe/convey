@@ -11,12 +11,9 @@
 A command-line tool that makes sharing pipes between machines easy.
 </p>
 
-<div>
-<video muted="" autoplay="" loop="" controls="" style="width:100%">
-  <source src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_top.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
-</div>
+<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_top.gif" alt="Top with Convey" border="0">
+
+
 # Usage
 
 In Terminal 1:
