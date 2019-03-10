@@ -14,11 +14,11 @@
 
 
 ```bash
-echo "Hello world" | convey
+echo "Hello world" | convey --demo
 21f50fba373e11e9990a72000872a940
 ```
 ```bash
-convey 21f50fba373e11e9990a72000872a940
+convey --demo 21f50fba373e11e9990a72000872a940
 Hello world
 ```
 
@@ -80,14 +80,14 @@ Use the `--config` flag on the command line to change the config file used if ne
 
 You can host your own [NATS Streaming Server](https://nats.io/documentation/streaming/nats-streaming-intro/) and configure `convey` to use that server.
 
-**Deploy to a local Docker container**
+#### Deploy to a local Docker container
 
 ```bash
 docker run -p 4222:4222 nats-streaming:linux
 convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
 ```
 
-**Deploy to an Azure Container Instance**
+#### Deploy to an Azure Container Instance (unsecure)
 
 note: We only include this as an illustration to keep the command simple as traffic is not encrypted.
 ```bash
@@ -95,15 +95,36 @@ az container create --image nats-streaming:linux --ports 4222 --ip-address Publi
 convey configure --nats-url nats://<IPADDRESS>:4222 --nats-cluster test-cluster
 ```
 
-**TLS**
+#### Secure deployment
+
+TODO
+- VM
+- Lets Encrypt
+- Start NATS Streaming with those keys
+- Configure the client with `convey configure`
+
+#### Other
+
+**Demo**
+
+On VM:
+```bash
+docker run nats-streaming:linux -ns tls://demo.nats.io:4443 -cid test-cluster1 -mc 0 -D
+```
 
 ```bash
-openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem -subj "/C=US/ST=Texas/L=Austin/O=AwesomeThings/CN=localhost"
+convey configure --nats-url tls://demo.nats.io:4443 --nats-cluster test-cluster1 --overwrite
+```
+
+**TLS (self-signed, to delete)**
+
+```bash
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout certs/server-key.pem -out certs/server-cert.pem -subj "/C=US/ST=Texas/L=Austin/O=AwesomeThings/CN=localhost"
 ```
 
 ```bash
 cd /Users/derekb/go/src/github.com/derekbekoe/convey
-docker run -p 4222:4222 -v $(pwd)/certs:/certs nats-streaming:linux -tls_client_cert /certs/cert.pem -tls_client_key /certs/key.pem  --tlscert /certs/cert.pem --tlskey /certs/key.pem --tlsverify=false --tls=false -secure=false
+docker run -p 4222:4222 -v $(pwd)/certs:/certs nats-streaming:linux -mc 0 --encrypt --encryption_key mykey --tlscert /certs/server-cert.pem --tlskey /certs/server-key.pem --tls
 ```
 
 # Development

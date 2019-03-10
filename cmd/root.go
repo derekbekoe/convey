@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"bufio"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +29,7 @@ import (
 
 	"github.com/docker/docker/pkg/namesgenerator"
 	homedir "github.com/mitchellh/go-homedir"
+	nats "github.com/nats-io/go-nats"
 	stan "github.com/nats-io/go-nats-streaming"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
@@ -134,13 +136,13 @@ func positionalArgsValidator(cmd *cobra.Command, args []string) error {
 }
 
 func createChannelNameUUID() string {
-	u1, err := uuid.NewV1()
+	u, err := uuid.NewV4()
 	if err != nil {
 		s := fmt.Sprintf("Failed to create channel name: %s\n", err)
 		errorExit(s)
 	}
 	// Remove dashes from UUID to make copy-paste easier in terminal
-	return strings.Replace(u1.String(), "-", "", -1)
+	return strings.Replace(u.String(), "-", "", -1)
 }
 
 func createChannelNameShort() string {
@@ -148,12 +150,12 @@ func createChannelNameShort() string {
 }
 
 func getClientID(prefix string) string {
-	u1, err := uuid.NewV1()
+	u, err := uuid.NewV4()
 	if err != nil {
 		s := fmt.Sprintf("Failed to create client ID: %s\n", err)
 		errorExit(s)
 	}
-	return fmt.Sprintf("%s-%s", prefix, u1.String())
+	return fmt.Sprintf("%s-%s", prefix, u.String())
 }
 
 func connectToStan(clientID string) stan.Conn {
@@ -168,19 +170,18 @@ func connectToStan(clientID string) stan.Conn {
 		errorExit(s)
 	}
 
-	// a := tls.Config{InsecureSkipVerify: true}
-	// nc, err1 := nats.Connect(natsURL, nats.Secure(&a))
-	// if err1 != nil {
-	// 	s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err1)
-	// 	errorExit(s)
-	// }
+	a := tls.Config{InsecureSkipVerify: false}
+	nc, err1 := nats.Connect(natsURL, nats.Secure(&a))
+	if err1 != nil {
+		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err1)
+		errorExit(s)
+	}
 
-	// stan.NatsURL(natsURL),
 	sc, err := stan.Connect(
 		natsClusterID,
 		clientID,
-		// stan.NatsConn(nc),
-		stan.NatsURL(natsURL),
+		stan.NatsConn(nc),
+		// stan.NatsURL(natsURL),
 		stan.SetConnectionLostHandler(func(_ stan.Conn, err error) {
 			log.Printf("Lost connection due to error - %s", err)
 		}))
