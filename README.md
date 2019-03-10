@@ -1,6 +1,35 @@
-# convey
-
+<p align="center">
+  <img 
+    src="/logo.png" 
+    width="315" height="120" border="0" alt="Convey">
+</p>
+<p align="center">
+<a href="https://github.com/derekbekoe/convey/releases"><img src="https://img.shields.io/github/release/derekbekoe/convey.svg" alt="Version"></a>
+<a href="https://travis-ci.org/derekbekoe/convey"><img src="https://travis-ci.org/derekbekoe/convey.svg?branch=master" alt="Build Status"></a>
+</p>
+<p align="center">
 A command-line tool that makes sharing pipes between machines easy.
+</p>
+
+<div>
+<video muted="" autoplay="" loop="" controls="" style="width:100%">
+  <source src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_top.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+</div>
+# Usage
+
+In Terminal 1:
+```bash
+echo "Hello world" | convey
+21f50fba373e11e9990a72000872a940
+```
+
+In Terminal 2:
+```bash
+convey 21f50fba373e11e9990a72000872a940
+Hello world
+```
 
 ## Install
 
@@ -23,19 +52,12 @@ This will download the latest release for your platform.
 Builds are available for the `amd64` architecture.  
 To directly from GitHub, visit https://github.com/derekbekoe/convey/releases/latest.  
 
-## Usage
-
-In Terminal 1:
+**Install with Go:**
 ```bash
-echo "Hello world" | convey
-21f50fba373e11e9990a72000872a940
+go get github.com/derekbekoe/convey
 ```
 
-In Terminal 2:
-```bash
-convey 21f50fba373e11e9990a72000872a940
-Hello world
-```
+
 
 ## Configuration
 
