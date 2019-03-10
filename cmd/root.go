@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"bufio"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -29,7 +28,6 @@ import (
 
 	"github.com/docker/docker/pkg/namesgenerator"
 	homedir "github.com/mitchellh/go-homedir"
-	nats "github.com/nats-io/go-nats"
 	stan "github.com/nats-io/go-nats-streaming"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
@@ -170,24 +168,19 @@ func connectToStan(clientID string) stan.Conn {
 		errorExit(s)
 	}
 
-	// "tls://localhost:4443"
-	// a := nats.Option {
-
+	// a := tls.Config{InsecureSkipVerify: true}
+	// nc, err1 := nats.Connect(natsURL, nats.Secure(&a))
+	// if err1 != nil {
+	// 	s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err1)
+	// 	errorExit(s)
 	// }
-	a := tls.Config{InsecureSkipVerify: true}
-	// nats.ClientCert("certs/cert.pem", "certs/key.pem"),
-	nc, err1 := nats.Connect(natsURL, nats.Secure(&a))
-	if err1 != nil {
-		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err1)
-		errorExit(s)
-	}
 
 	// stan.NatsURL(natsURL),
 	sc, err := stan.Connect(
 		natsClusterID,
 		clientID,
-		stan.NatsConn(nc),
-		// stan.NatsURL(natsURL),
+		// stan.NatsConn(nc),
+		stan.NatsURL(natsURL),
 		stan.SetConnectionLostHandler(func(_ stan.Conn, err error) {
 			log.Printf("Lost connection due to error - %s", err)
 		}))
