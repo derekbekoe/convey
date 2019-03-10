@@ -14,11 +14,11 @@
 
 
 ```bash
-echo "Hello world" | convey --demo
+echo "Hello world" | convey
 21f50fba373e11e9990a72000872a940
 ```
 ```bash
-convey --demo 21f50fba373e11e9990a72000872a940
+convey 21f50fba373e11e9990a72000872a940
 Hello world
 ```
 
@@ -33,6 +33,8 @@ Hello world
 - Powered by [NATS](https://nats.io/), a CNCF project.
 
 # Getting Started
+
+## Install
 
 ### Linux
 ```bash
@@ -57,6 +59,17 @@ convey -h
 ### Go
 ```bash
 go get github.com/derekbekoe/convey
+```
+
+## Demo Mode
+
+```bash
+echo "Hello world" | convey --demo
+<ID>
+```
+```bash
+convey --demo <ID>
+Hello world
 ```
 
 # Configuration
