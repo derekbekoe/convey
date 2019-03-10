@@ -9,9 +9,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+// The NATS URL passed in from command-line
 var natsURL string
+
+// The NATS cluster ID passed in from command-line
 var natsClusterID string
+
+// Whether short channel names should be used instead of the standard uuid format
 var useShortName bool
+
+// Whether the current config file should be overwritten
 var forceWrite bool
 
 func init() {

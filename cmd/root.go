@@ -36,30 +36,24 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	configKeyNatsURL       = "NatsURL"
+	configKeyNatsClusterID = "NatsClusterID"
+	configKeyUseShortName  = "UseShortName"
+)
+
+// Path to config file set by user
 var cfgFile string
+
+// Whether to log verbose output
 var verbose bool
 
-const configKeyNatsURL = "NatsURL"
-const configKeyNatsClusterID = "NatsClusterID"
-const configKeyUseShortName = "UseShortName"
-
-// ETX is End Of Text Sequence
-var ETX = []byte{3}
+// etx is an identifier for End Of Text Sequence
+var etx = []byte{3}
 
 func errorExit(msg string) {
 	fmt.Fprintln(os.Stderr, msg)
 	os.Exit(1)
-}
-
-// positionalArgsValidator valids the positional args
-func positionalArgsValidator(cmd *cobra.Command, args []string) error {
-	if len(args) == 0 {
-		return nil
-	} else if len(args) == 1 {
-		_, err := uuid.FromString(args[0])
-		return err
-	}
-	return errors.New("Invalid positional arguments")
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -74,12 +68,71 @@ var rootCmd = &cobra.Command{
 // RootCommandFunc is a handler for the bare application
 func RootCommandFunc(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
-		PublishModeFunc()
+		publishModeFunc()
 	} else if len(args) == 1 {
-		SubscribeModeFunc(args[0])
+		subscribeModeFunc(args[0])
 	} else {
 		errorExit("Too many args")
 	}
+}
+
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		errorExit(err.Error())
+	}
+}
+
+func init() {
+	cobra.OnInitialize(initConfig)
+
+	// Here you will define your flags and configuration settings.
+	// Cobra supports persistent flags, which, if defined here,
+	// will be global for your application.
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.convey.yaml)")
+
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+}
+
+// initConfig reads in config file and ENV variables if set.
+func initConfig() {
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+	} else {
+		// Find home directory.
+		home, err := homedir.Dir()
+		if err != nil {
+			errorExit(err.Error())
+		}
+
+		// Search config in home directory with name ".convey" (without extension).
+		viper.AddConfigPath(home)
+		viper.SetConfigName(".convey")
+	}
+
+	viper.AutomaticEnv() // read in environment variables that match
+
+	if !verbose {
+		log.SetOutput(ioutil.Discard)
+	}
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err == nil {
+		log.Println("Config file:", viper.ConfigFileUsed())
+	}
+}
+
+// positionalArgsValidator valids the positional args
+func positionalArgsValidator(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return nil
+	} else if len(args) == 1 {
+		_, err := uuid.FromString(args[0])
+		return err
+	}
+	return errors.New("Invalid positional arguments")
 }
 
 func createChannelNameUUID() string {
@@ -145,8 +198,8 @@ func connectToStan(clientID string) stan.Conn {
 	return sc
 }
 
-// PublishModeFunc handles publishing messages to message service
-func PublishModeFunc() {
+// publishModeFunc handles publishing messages to message service
+func publishModeFunc() {
 	clientID := getClientID("convey-pub")
 	sc := connectToStan(clientID)
 
@@ -183,12 +236,12 @@ func PublishModeFunc() {
 
 	<-donePublish
 
-	sc.Publish(channelName, ETX)
+	sc.Publish(channelName, etx)
 	sc.Close()
 }
 
-// SubscribeModeFunc handles reading messages from the message service
-func SubscribeModeFunc(channelName string) {
+// subscribeModeFunc handles reading messages from the message service
+func subscribeModeFunc(channelName string) {
 	clientID := getClientID("convey-sub")
 	sc := connectToStan(clientID)
 
@@ -197,7 +250,7 @@ func SubscribeModeFunc(channelName string) {
 	doneSubscribe := make(chan bool)
 
 	sub, subErr := sc.Subscribe(channelName, func(m *stan.Msg) {
-		if reflect.DeepEqual(m.Data, ETX) {
+		if reflect.DeepEqual(m.Data, etx) {
 			doneSubscribe <- true
 		} else {
 			fmt.Println(string(m.Data))
@@ -213,52 +266,4 @@ func SubscribeModeFunc(channelName string) {
 
 	sub.Unsubscribe()
 	sc.Close()
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		errorExit(err.Error())
-	}
-}
-
-func init() {
-	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.convey.yaml)")
-
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			errorExit(err.Error())
-		}
-
-		// Search config in home directory with name ".convey" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".convey")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	if !verbose {
-		log.SetOutput(ioutil.Discard)
-	}
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		log.Println("Config file:", viper.ConfigFileUsed())
-	}
 }
