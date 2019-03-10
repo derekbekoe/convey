@@ -126,10 +126,10 @@ See https://golang.org/doc/install/source#environment
 # Examples
 
 <div style="text-align: center">
-<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_top.gif" alt="Top with Convey" border="0" height="400">
-<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_filecp.gif" alt="Top with Convey" border="0" height="400">
-<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_ms.gif" alt="Top with Convey" border="0" height="400">
-<img src="https://derekb.blob.core.windows.net/public/blog_convey_cloudshell_1.gif" alt="Top with Convey" border="0" height="400">
+<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_top.gif" alt="Top with Convey" border="0" width="400">
+<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_filecp.gif" alt="Top with Convey" border="0" width="400">
+<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_ms.gif" alt="Top with Convey" border="0" width="400">
+<img src="https://derekb.blob.core.windows.net/public/blog_convey_cloudshell_1.gif" alt="Top with Convey" border="0" width="400">
 </div>
 
 # License
