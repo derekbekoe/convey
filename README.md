@@ -121,8 +121,7 @@ TODO
 **Demo**
 
 ```bash
-docker run nats-streaming:linux -ns tls://demo.nats.io:4443 -cid test-cluster1 -mc 0 -D
-convey configure --nats-url tls://demo.nats.io:4443 --nats-cluster test-cluster1 --overwrite
+docker run nats-streaming:linux -ns tls://demo.nats.io:4443 -cid convey-demo-cluster -mc 0 -ma 30m -mi 30m -D
 ```
 
 **TLS (self-signed, to delete)**

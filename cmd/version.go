@@ -19,7 +19,7 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the version number of Convey",
+	Short: "Print version information",
 	Run:   VersionCommandFunc,
 }
 
