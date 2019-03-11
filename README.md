@@ -72,6 +72,10 @@ convey --demo <ID>
 Hello world
 ```
 
+A demo mode is available using the `--demo` flag.
+
+It uses the demo.nats.io demo server with channels expiring after 30 minutes of creation or 10 minutes of inactivity.
+
 # Configuration
 
 Set configuration with the `convey configure` command.
@@ -100,40 +104,7 @@ docker run -p 4222:4222 nats-streaming:linux
 convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
 ```
 
-#### Deploy to an Azure Container Instance (unsecure)
-
-note: We only include this as an illustration to keep the command simple as traffic is not encrypted.
-```bash
-az container create --image nats-streaming:linux --ports 4222 --ip-address Public -g <RG> -n nats1
-convey configure --nats-url nats://<IPADDRESS>:4222 --nats-cluster test-cluster
-```
-
-#### Secure deployment
-
-TODO
-- VM
-- Lets Encrypt
-- Start NATS Streaming with those keys
-- Configure the client with `convey configure`
-
-#### Other
-
-**Demo**
-
-```bash
-docker run nats-streaming:linux -ns tls://demo.nats.io:4443 -cid convey-demo-cluster -mc 0 -ma 30m -mi 30m -D
-```
-
-**TLS (self-signed, to delete)**
-
-```bash
-openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout certs/server-key.pem -out certs/server-cert.pem -subj "/C=US/ST=Texas/L=Austin/O=AwesomeThings/CN=localhost"
-```
-
-```bash
-cd /Users/derekb/go/src/github.com/derekbekoe/convey
-docker run -p 4222:4222 -v $(pwd)/certs:/certs nats-streaming:linux -mc 0 --encrypt --encryption_key mykey --tlscert /certs/server-cert.pem --tlskey /certs/server-key.pem --tls
-```
+You will need to use the `--unsecure` flag as TLS will not be enabled through this local container.
 
 # Development
 
