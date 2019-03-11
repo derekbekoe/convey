@@ -39,14 +39,14 @@ Hello world
 
 ### Linux
 ```bash
-wget -qO convey https://get.convey.sh/linux
+wget -qO ~/bin/convey https://get.convey.sh/linux
 chmod +x ~/bin/convey
 ~/bin/convey -h
 ```
 
 ### macOS
 ```bash
-wget -qO ~/bin/convey https://get.convey.sh/macos
+curl -sLo ~/bin/convey https://get.convey.sh/macos
 chmod +x ~/bin/convey
 ~/bin/convey -h
 ```
@@ -54,7 +54,7 @@ chmod +x ~/bin/convey
 ### Windows  
 ```powershell
 Invoke-WebRequest https://get.convey.sh/windows -OutFile convey.exe
-convey -h
+.\convey.exe -h
 ```
 
 ## Demo Mode
