@@ -8,7 +8,7 @@
 <a href="https://travis-ci.org/derekbekoe/convey"><img src="https://img.shields.io/travis/derekbekoe/convey/master.svg?style=flat-square&logo=travis" alt="Build Status"></a>
 </p>
 <div align="center">
-<p>A command-line tool that makes sharing pipes between machines easy.</p>
+<p>A command-line tool that makes it easy to pipe between machines.</p>
 <p>Learn more at <a href="https://blog.derekbekoe.com/convey"><em>Convey: Pipe between machines</em></a></p>
 </div>
 
@@ -27,6 +27,7 @@ Hello world
 - Pipe between hosts with an idomatic interface using the standard `|` symbol.
 - Easily pipe files between hosts.
 - Does not require any open ports between your clients.
+- Configure it to use short channel names instead of UUIDs for easy typing such as `vibrant_allen`.
 - Supports colors through [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors).
 - Supports Linux, macOS and Windows.
 - No dependencies to install.
