@@ -56,12 +56,9 @@ Invoke-WebRequest https://get.convey.sh/windows -OutFile convey.exe
 convey -h
 ```
 
-### Go
-```bash
-go get github.com/derekbekoe/convey
-```
-
 ## Demo Mode
+
+A demo mode is available using the `--demo` flag.
 
 ```bash
 echo "Hello world" | convey --demo
@@ -72,9 +69,9 @@ convey --demo <ID>
 Hello world
 ```
 
-A demo mode is available using the `--demo` flag.
+Demo mode uses the `demo.nats.io` server over a TLS connection with channels expiring after 30 minutes of creation or 10 minutes of inactivity.
 
-It uses the demo.nats.io demo server with channels expiring after 30 minutes of creation or 10 minutes of inactivity.
+Use this mode for experimental and getting started purposes only.
 
 # Configuration
 

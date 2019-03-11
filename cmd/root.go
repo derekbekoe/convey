@@ -100,7 +100,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.convey.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVar(&useUnsecure, "unsecure", false, "use unsecured connection (for development purposes only)")
-	rootCmd.PersistentFlags().BoolVar(&useDemoMode, "demo", false, "use demo mode (for experimental purposes only)")
+	rootCmd.PersistentFlags().BoolVar(&useDemoMode, "demo", false, "use demo mode")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -178,7 +178,7 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 	}
 
 	if natsURL == "" || natsClusterID == "" {
-		s := fmt.Sprintf("The configuration options '%s' and '%s' are not set. Use `convey configure` to set.",
+		s := fmt.Sprintf("The configuration options '%s' and '%s' are not set. Use `convey configure` to set. Use `--help` for usage.",
 			configKeyNatsURL,
 			configKeyNatsClusterID)
 		errorExit(s)
