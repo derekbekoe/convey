@@ -6,13 +6,12 @@
 <p align="center">
 <a href="https://github.com/derekbekoe/convey/releases"><img src="https://img.shields.io/github/release/derekbekoe/convey.svg?style=flat-square&logo=github&color=%236C63FF" alt="Version"></a>
 <a href="https://travis-ci.org/derekbekoe/convey"><img src="https://img.shields.io/travis/derekbekoe/convey/master.svg?style=flat-square&logo=travis" alt="Build Status"></a>
+<a href="https://online.visualstudio.com/environments/new?name=👏%20Convey&repo=derekbekoe/convey"><img src="https://img.shields.io/static/v1?style=flat-square&logo=microsoft&label=VS%20Online&message=Create&color=blue" alt="VS Online"></a>
 </p>
 <div align="center">
 <p>A command-line tool that makes it easy to pipe between machines.</p>
 <p>Learn more at <a href="https://blog.derekbekoe.com/convey"><em>Convey: Pipe between machines</em></a></p>
 </div>
-
-[![Open in Visual Studio Online](https://img.shields.io/endpoint?style=social&url=https%3A%2F%2Faka.ms%2Fvso-badge)](https://online.visualstudio.com/environments/new?name=👏%20Convey&repo=derekbekoe/convey)
 
 ```bash
 echo "Hello world" | convey
