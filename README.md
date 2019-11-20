@@ -12,6 +12,7 @@
 <p>Learn more at <a href="https://blog.derekbekoe.com/convey"><em>Convey: Pipe between machines</em></a></p>
 </div>
 
+[![Open in Visual Studio Online](https://img.shields.io/endpoint?style=social&url=https%3A%2F%2Faka.ms%2Fvso-badge)](https://online.visualstudio.com/environments/new?name=👏%20Convey&repo=derekbekoe/convey)
 
 ```bash
 echo "Hello world" | convey
