@@ -1,3 +1,6 @@
+# Delete the usual cloned repo contents as we're getting the repo with 'go get' instead.
+rm -rf /home/vsonline/workspace
+
 echo "Installing go..."
 tmp_file=$(mktemp)
 wget -q -O $tmp_file https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz
@@ -23,7 +26,5 @@ $go_exe get -v github.com/uudashr/gopkgs/cmd/gopkgs
 $go_exe get -v github.com/stamblerre/gocode
 $go_exe get -v github.com/sqs/goreturns
 $go_exe get -v golang.org/x/lint/golint
-echo "Installed VS Code GO extension dependencies."
+echo "Installed VS Code Gd extension dependencies."
 echo "Done."
-
-cd $go_convey_src
