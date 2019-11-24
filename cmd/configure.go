@@ -24,7 +24,7 @@ var natsClusterID string
 var keyFile string
 
 // A known fingerprint in hex format
-var knownFingerprintHex string
+var knownFingerprint string
 
 // Whether short channel names should be used instead of the standard uuid format
 var useShortName bool
@@ -46,6 +46,10 @@ func generateFingerprint(keyFile string) string {
 		resp, err1 := http.Get(keyFile)
 		if err1 != nil {
 			errorExit(err1.Error())
+		}
+		if resp.StatusCode != http.StatusOK {
+			errMsg := fmt.Sprintf("Keyfile url not OK - Status code %d was returned from GET %s", resp.StatusCode, keyFile)
+			errorExit(errMsg)
 		}
 		defer resp.Body.Close()
 		var err2 error
@@ -77,7 +81,7 @@ func init() {
 	configureCmd.PersistentFlags().StringVar(&natsURL, "nats-url", "", "NATS server url")
 	configureCmd.PersistentFlags().StringVar(&natsClusterID, "nats-cluster", "", "NATS cluster id")
 	configureCmd.PersistentFlags().StringVar(&keyFile, "keyfile", "", "URL or local path to keyfile (at least 64 bytes is required)")
-	configureCmd.PersistentFlags().StringVar(&knownFingerprintHex, "fingerprint", "", "If you know the fingerprint you want to use (SHAKE256 hex format), you can set it directly instead of using --keyfile")
+	configureCmd.PersistentFlags().StringVar(&knownFingerprint, "fingerprint", "", "If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile")
 	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-names", false, "Use short channel names (channel conflicts could be more likely for a given keyfile)")
 	configureCmd.PersistentFlags().BoolVar(&forceWrite, "overwrite", false, "Overwrite current configuration")
 }
@@ -91,15 +95,15 @@ var configureCmd = &cobra.Command{
 // ConfigureCommandFunc is a handler for the configure command
 func ConfigureCommandFunc(cmd *cobra.Command, args []string) {
 	var fingerprint string
-	if knownFingerprintHex != "" {
+	if knownFingerprint != "" {
 		if keyFile != "" {
 			errorExit("Specify either --fingerprint OR --keyfile, not both.")
 		}
-		if _, err := hex.DecodeString(knownFingerprintHex); err != nil || len(knownFingerprintHex) != fingerprintByteLength*2 {
+		if _, err := hex.DecodeString(knownFingerprint); err != nil || len(knownFingerprint) != fingerprintByteLength*2 {
 			msg := fmt.Sprintf("The specified fingerprint is not %d bytes long and a valid hexidecimal string", fingerprintByteLength)
 			errorExit(msg)
 		}
-		fingerprint = knownFingerprintHex
+		fingerprint = knownFingerprint
 	} else {
 		fingerprint = generateFingerprint(keyFile)
 	}
