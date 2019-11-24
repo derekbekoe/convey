@@ -23,15 +23,20 @@ var natsClusterID string
 // The URL or filepath to file
 var keyFile string
 
+// A known fingerprint in hex format
+var knownFingerprintHex string
+
 // Whether short channel names should be used instead of the standard uuid format
 var useShortName bool
 
 // Whether the current config file should be overwritten
 var forceWrite bool
 
+const shake256MinBytesRequired = 64
+const fingerprintByteLength = 64
+
 func generateFingerprint(keyFile string) string {
-	minBytesRequired := 64
-	hash := make([]byte, 64)
+	hash := make([]byte, fingerprintByteLength)
 	var inputBytes []byte
 	if keyFile == "" {
 		return ""
@@ -59,8 +64,8 @@ func generateFingerprint(keyFile string) string {
 
 	// Generate the fingerprint
 	inputBytesLen := len(inputBytes)
-	if inputBytesLen < minBytesRequired {
-		errMsg := fmt.Sprintf("Bad keyfile provided - At least %d bytes required but got %d byte(s).", minBytesRequired, inputBytesLen)
+	if inputBytesLen < shake256MinBytesRequired {
+		errMsg := fmt.Sprintf("Bad keyfile provided - At least %d bytes required but got %d byte(s).", shake256MinBytesRequired, inputBytesLen)
 		errorExit(errMsg)
 	}
 	sha3.ShakeSum256(hash, inputBytes)
@@ -72,7 +77,8 @@ func init() {
 	configureCmd.PersistentFlags().StringVar(&natsURL, "nats-url", "", "NATS server url")
 	configureCmd.PersistentFlags().StringVar(&natsClusterID, "nats-cluster", "", "NATS cluster id")
 	configureCmd.PersistentFlags().StringVar(&keyFile, "keyfile", "", "URL or local path to keyfile (at least 64 bytes is required)")
-	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-name", false, "Use short channel names. Channel conflicts may occur.")
+	configureCmd.PersistentFlags().StringVar(&knownFingerprintHex, "fingerprint", "", "If you know the fingerprint you want to use (SHAKE256 hex format), you can set it directly instead of using --keyfile")
+	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-names", false, "Use short channel names (channel conflicts could be more likely for a given keyfile)")
 	configureCmd.PersistentFlags().BoolVar(&forceWrite, "overwrite", false, "Overwrite current configuration")
 }
 
@@ -84,12 +90,25 @@ var configureCmd = &cobra.Command{
 
 // ConfigureCommandFunc is a handler for the configure command
 func ConfigureCommandFunc(cmd *cobra.Command, args []string) {
+	var fingerprint string
+	if knownFingerprintHex != "" {
+		if keyFile != "" {
+			errorExit("Specify either --fingerprint OR --keyfile, not both.")
+		}
+		if _, err := hex.DecodeString(knownFingerprintHex); err != nil || len(knownFingerprintHex) != fingerprintByteLength*2 {
+			msg := fmt.Sprintf("The specified fingerprint is not %d bytes long and a valid hexidecimal string", fingerprintByteLength)
+			errorExit(msg)
+		}
+		fingerprint = knownFingerprintHex
+	} else {
+		fingerprint = generateFingerprint(keyFile)
+	}
 
 	// Set config passed on the arguments passed in
+	viper.Set(configKeyFingerprint, fingerprint)
 	viper.Set(configKeyNatsURL, natsURL)
 	viper.Set(configKeyNatsClusterID, natsClusterID)
 	viper.Set(configKeyUseShortName, useShortName)
-	viper.Set(configKeyFingerprint, generateFingerprint(keyFile))
 
 	// If a config file is found, read it in.
 	configFileExists := false
