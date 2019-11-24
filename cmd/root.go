@@ -135,13 +135,13 @@ func initConfig() {
 	}
 }
 
-// positionalArgsValidator valids the positional args
+// positionalArgsValidator validates the positional args
 func positionalArgsValidator(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		return nil
 	} else if len(args) == 1 {
-		_, err := uuid.FromString(args[0])
-		return err
+		// We do not check if it's a valid uuid as it could be a short name also
+		return nil
 	}
 	return errors.New("Invalid positional arguments")
 }
@@ -173,7 +173,6 @@ func getClientID(prefix string) string {
 func getChannelID(channelName string) string {
 	hash := make([]byte, 64)
 	fingerprint := viper.GetString(configKeyFingerprint)
-	//
 	if fingerprint == "" {
 		if useUnsecure {
 			log.Printf("Allowing no fingerprint as user specified --unsecure.")
@@ -181,6 +180,9 @@ func getChannelID(channelName string) string {
 			errorExit("No keyfile fingerprint found - Use 'convey configure' to set the keyfile.")
 		}
 	} else {
+		if !IsValidFingerprint(fingerprint) {
+			errorExit(InvalidFingerprintMsg)
+		}
 		log.Printf("Using fingerprint to generate channel id")
 	}
 	inputBytes := []byte(fingerprint + channelName)

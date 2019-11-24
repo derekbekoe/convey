@@ -32,11 +32,11 @@ var useShortName bool
 // Whether the current config file should be overwritten
 var forceWrite bool
 
-const shake256MinBytesRequired = 64
-const fingerprintByteLength = 64
+// Shake256MinBytesRequired is our minimum bytes required for input to SHAKE-256
+const Shake256MinBytesRequired = 64
 
 func generateFingerprint(keyFile string) string {
-	hash := make([]byte, fingerprintByteLength)
+	hash := make([]byte, FingerprintByteLength)
 	var inputBytes []byte
 	if keyFile == "" {
 		return ""
@@ -68,8 +68,8 @@ func generateFingerprint(keyFile string) string {
 
 	// Generate the fingerprint
 	inputBytesLen := len(inputBytes)
-	if inputBytesLen < shake256MinBytesRequired {
-		errMsg := fmt.Sprintf("Bad keyfile provided - At least %d bytes required but got %d byte(s).", shake256MinBytesRequired, inputBytesLen)
+	if inputBytesLen < Shake256MinBytesRequired {
+		errMsg := fmt.Sprintf("Bad keyfile provided - At least %d bytes required but got %d byte(s).", Shake256MinBytesRequired, inputBytesLen)
 		errorExit(errMsg)
 	}
 	sha3.ShakeSum256(hash, inputBytes)
@@ -99,11 +99,11 @@ func ConfigureCommandFunc(cmd *cobra.Command, args []string) {
 		if keyFile != "" {
 			errorExit("Specify either --fingerprint OR --keyfile, not both.")
 		}
-		if _, err := hex.DecodeString(knownFingerprint); err != nil || len(knownFingerprint) != fingerprintByteLength*2 {
-			msg := fmt.Sprintf("The specified fingerprint is not %d bytes long and a valid hexidecimal string", fingerprintByteLength)
-			errorExit(msg)
+		if IsValidFingerprint(knownFingerprint) {
+			fingerprint = knownFingerprint
+		} else {
+			errorExit(InvalidFingerprintMsg)
 		}
-		fingerprint = knownFingerprint
 	} else {
 		fingerprint = generateFingerprint(keyFile)
 	}
