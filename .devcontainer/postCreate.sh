@@ -30,3 +30,6 @@ $go_exe get -v github.com/stamblerre/gocode
 $go_exe get -v github.com/sqs/goreturns
 $go_exe get -v golang.org/x/lint/golint
 echo "Done."
+
+echo "NOTE: Use the command below to be in the correct development source directory."
+echo "cd \$GOPATH_CONVEY"
