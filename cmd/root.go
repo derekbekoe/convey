@@ -30,7 +30,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	nats "github.com/nats-io/nats.go"
 	stan "github.com/nats-io/stan.go"
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -126,6 +126,8 @@ go mod tidy
 # verification
 go build
 go test
+# list all
+go list -m all
 ```
 
 
