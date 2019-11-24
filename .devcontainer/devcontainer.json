@@ -3,5 +3,6 @@
     "extensions": [
         "ms-vscode.Go"
     ],
+    "workspaceFolder": "/home/vsonline/workspace/go/src/github.com/derekbekoe/convey",
     "postCreateCommand": "bash .devcontainer/postCreate.sh"
 }
