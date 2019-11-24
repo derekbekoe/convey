@@ -1,4 +1,5 @@
 # Delete the usual cloned repo contents as we're getting the repo with 'go get' instead.
+cd /home/vsonline
 rm -rf /home/vsonline/workspace
 
 echo "Installing go..."
@@ -26,5 +27,4 @@ $go_exe get -v github.com/uudashr/gopkgs/cmd/gopkgs
 $go_exe get -v github.com/stamblerre/gocode
 $go_exe get -v github.com/sqs/goreturns
 $go_exe get -v golang.org/x/lint/golint
-echo "Installed VS Code Gd extension dependencies."
 echo "Done."
