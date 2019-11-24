@@ -1,3 +1,5 @@
+set -x
+
 # Delete the usual cloned repo contents as we're getting the repo with 'go get' instead.
 cd /home/vsonline
 rm -rf /home/vsonline/workspace
