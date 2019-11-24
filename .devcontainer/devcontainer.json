@@ -1,0 +1,7 @@
+{
+    "name": "Convey",
+    "extensions": [
+        "ms-vscode.Go"
+    ],
+    "postCreateCommand": "bash .devcontainer/postCreate.sh"
+}
