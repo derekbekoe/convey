@@ -14,8 +14,8 @@ echo "go installed."
 new_gopath=/home/vsonline/workspace/go
 go_convey_src=$new_gopath/src/github.com/derekbekoe/convey
 echo "PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
-echo "GOPATH=$new_gopath" >> ~/.bashrc
-echo "GOPATH_CONVEY=$go_convey_src" >> ~/.bashrc
+echo "export GOPATH=$new_gopath" >> ~/.bashrc
+echo "export GOPATH_CONVEY=$go_convey_src" >> ~/.bashrc
 export GOPATH=$new_gopath
 go_exe=/usr/local/go/bin/go
 $go_exe get -u github.com/derekbekoe/convey
