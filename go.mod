@@ -12,4 +12,5 @@ require (
 	github.com/nats-io/stan.go v0.5.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.5.0
+	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 )

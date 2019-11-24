@@ -21,15 +21,15 @@ go_exe=/usr/local/go/bin/go
 $go_exe get -u github.com/derekbekoe/convey
 
 # Install VS Code Go extension dependencies - https://github.com/Microsoft/vscode-go/wiki/Go-tools-that-the-Go-extension-depends-on
-echo "Installing VS Code Go extension dependencies..."
-$go_exe get -v github.com/ramya-rao-a/go-outline
-$go_exe get -v github.com/rogpeppe/godef
-$go_exe get -v github.com/mdempsky/gocode
-$go_exe get -v github.com/uudashr/gopkgs/cmd/gopkgs
-$go_exe get -v github.com/stamblerre/gocode
-$go_exe get -v github.com/sqs/goreturns
-$go_exe get -v golang.org/x/lint/golint
-echo "Done."
+# echo "Installing VS Code Go extension dependencies..."
+# $go_exe get -v github.com/ramya-rao-a/go-outline
+# $go_exe get -v github.com/rogpeppe/godef
+# $go_exe get -v github.com/mdempsky/gocode
+# $go_exe get -v github.com/uudashr/gopkgs/cmd/gopkgs
+# $go_exe get -v github.com/stamblerre/gocode
+# $go_exe get -v github.com/sqs/goreturns
+# $go_exe get -v golang.org/x/lint/golint
+# echo "Done."
 
 echo "NOTE: Use the command below to be in the correct development source directory."
 echo "cd \$GOPATH_CONVEY"

@@ -27,10 +27,10 @@ import (
 	"syscall"
 
 	"github.com/docker/docker/pkg/namesgenerator"
+	uuid "github.com/gofrs/uuid"
 	homedir "github.com/mitchellh/go-homedir"
 	nats "github.com/nats-io/nats.go"
 	stan "github.com/nats-io/stan.go"
-	uuid "github.com/gofrs/uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -39,6 +39,7 @@ const (
 	configKeyNatsURL       = "NatsURL"
 	configKeyNatsClusterID = "NatsClusterID"
 	configKeyUseShortName  = "UseShortName"
+	configKeyFingerprint   = "Fingerprint"
 	demoNatsURL            = "tls://demo.nats.io:4443"
 	demoNatsClusterID      = "convey-demo-cluster"
 )
