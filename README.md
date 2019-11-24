@@ -120,6 +120,15 @@ gox -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$(git rev-lis
 ```
 See https://golang.org/doc/install/source#environment
 
+**Go Module Verification**
+```bash
+go mod tidy
+# verification
+go build
+go test
+```
+
+
 # Examples
 
 Click to expand each gif.

@@ -28,8 +28,8 @@ import (
 
 	"github.com/docker/docker/pkg/namesgenerator"
 	homedir "github.com/mitchellh/go-homedir"
-	nats "github.com/nats-io/go-nats"
-	stan "github.com/nats-io/go-nats-streaming"
+	nats "github.com/nats-io/nats.go"
+	stan "github.com/nats-io/stan.go"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
