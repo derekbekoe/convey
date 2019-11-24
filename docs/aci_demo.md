@@ -1,6 +1,6 @@
 ## Deploy to Azure Container Instances
 
-We only include this as an illustration to keep the command simple as traffic to the container is not encrypted:
+We only include this as an illustration to keep the command simple as traffic to the container is not secure:
 
 ```
 az group create -n nats -l westus
