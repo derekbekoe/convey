@@ -3,10 +3,13 @@ tmp_file=$(mktemp)
 wget -q -O $tmp_file https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf $tmp_file
 rm $tmp_file
-echo "PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
-echo "GOPATH=/home/vsonline/workspace/go" >> ~/.bashrc
-echo "GOPATH_CONVEY=/home/vsonline/workspace/go/src/github.com/derekbekoe/convey" >> ~/.bashrc
+echo "go installed."
 
+new_gopath=/home/vsonline/workspace/go
+echo "PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
+echo "GOPATH=$new_gopath" >> ~/.bashrc
+echo "GOPATH_CONVEY=$new_gopath/src/github.com/derekbekoe/convey" >> ~/.bashrc
+export GOPATH=$new_gopath
 go_exe=/usr/local/go/bin/go
 $go_exe get -u github.com/derekbekoe/convey
 
@@ -19,3 +22,5 @@ $go_exe get -v github.com/uudashr/gopkgs/cmd/gopkgs
 $go_exe get -v github.com/stamblerre/gocode
 $go_exe get -v github.com/sqs/goreturns
 $go_exe get -v golang.org/x/lint/golint
+echo "Installed VS Code GO extension dependencies."
+echo "Done."
