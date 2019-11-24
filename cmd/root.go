@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -27,18 +28,20 @@ import (
 	"syscall"
 
 	"github.com/docker/docker/pkg/namesgenerator"
+	uuid "github.com/gofrs/uuid"
 	homedir "github.com/mitchellh/go-homedir"
-	nats "github.com/nats-io/go-nats"
-	stan "github.com/nats-io/go-nats-streaming"
-	uuid "github.com/satori/go.uuid"
+	nats "github.com/nats-io/nats.go"
+	stan "github.com/nats-io/stan.go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/sha3"
 )
 
 const (
 	configKeyNatsURL       = "NatsURL"
 	configKeyNatsClusterID = "NatsClusterID"
 	configKeyUseShortName  = "UseShortName"
+	configKeyFingerprint   = "Fingerprint"
 	demoNatsURL            = "tls://demo.nats.io:4443"
 	demoNatsClusterID      = "convey-demo-cluster"
 )
@@ -132,13 +135,13 @@ func initConfig() {
 	}
 }
 
-// positionalArgsValidator valids the positional args
+// positionalArgsValidator validates the positional args
 func positionalArgsValidator(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		return nil
 	} else if len(args) == 1 {
-		_, err := uuid.FromString(args[0])
-		return err
+		// We do not check if it's a valid uuid as it could be a short name also
+		return nil
 	}
 	return errors.New("Invalid positional arguments")
 }
@@ -164,6 +167,27 @@ func getClientID(prefix string) string {
 		errorExit(s)
 	}
 	return fmt.Sprintf("%s-%s", prefix, u.String())
+}
+
+// Channel ID is what we use as the NATS Streaming subject (channel name is just the user facing name)
+func getChannelID(channelName string) string {
+	hash := make([]byte, 64)
+	fingerprint := viper.GetString(configKeyFingerprint)
+	if fingerprint == "" {
+		if useUnsecure {
+			log.Printf("Allowing no fingerprint as user specified --unsecure.")
+		} else {
+			errorExit("No keyfile fingerprint found - Use 'convey configure' to set the keyfile.")
+		}
+	} else {
+		if !IsValidFingerprint(fingerprint) {
+			errorExit(InvalidFingerprintMsg)
+		}
+		log.Printf("Using fingerprint to generate channel id")
+	}
+	inputBytes := []byte(fingerprint + channelName)
+	sha3.ShakeSum256(hash, inputBytes)
+	return hex.EncodeToString(hash)
 }
 
 func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
@@ -231,9 +255,13 @@ func publishModeFunc() {
 		channelName = createChannelNameUUID()
 	}
 
+	channelID := getChannelID(channelName)
+
+	log.Printf("Using friendly channel name %s\n", channelName)
+	log.Printf("Publishing to channel id %s\n", channelID)
+
 	// Print channel to console for user to copy
 	fmt.Println(channelName)
-	log.Printf("Publishing to channel %s\n", channelName)
 
 	donePublish := make(chan bool)
 
@@ -249,14 +277,14 @@ func publishModeFunc() {
 		scanner := bufio.NewScanner(bufio.NewReader(os.Stdin))
 		for scanner.Scan() {
 			line := scanner.Text()
-			stanConn.Publish(channelName, []byte(line))
+			stanConn.Publish(channelID, []byte(line))
 		}
 		donePublish <- true
 	}()
 
 	<-donePublish
 
-	stanConn.Publish(channelName, etx)
+	stanConn.Publish(channelID, etx)
 	stanConn.Close()
 	natsConn.Close()
 }
@@ -266,11 +294,14 @@ func subscribeModeFunc(channelName string) {
 	clientID := getClientID("convey-sub")
 	stanConn, natsConn := connectToStan(clientID)
 
-	log.Printf("Subscribing to channel %s\n", channelName)
+	channelID := getChannelID(channelName)
+
+	log.Printf("Using friendly channel name %s\n", channelName)
+	log.Printf("Subscribing to channel id %s\n", channelID)
 
 	doneSubscribe := make(chan bool)
 
-	sub, subErr := stanConn.Subscribe(channelName, func(m *stan.Msg) {
+	sub, subErr := stanConn.Subscribe(channelID, func(m *stan.Msg) {
 		if reflect.DeepEqual(m.Data, etx) {
 			doneSubscribe <- true
 		} else {
@@ -279,7 +310,7 @@ func subscribeModeFunc(channelName string) {
 	}, stan.DeliverAllAvailable())
 
 	if subErr != nil {
-		s := fmt.Sprintf("Failed to subscribe to channel %s due to error %s", channelName, subErr)
+		s := fmt.Sprintf("Failed to subscribe to channel name %s due to error %s", channelName, subErr)
 		errorExit(s)
 	}
 
