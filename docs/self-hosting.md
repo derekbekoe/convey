@@ -112,10 +112,10 @@ cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=config.json -profile=server 
 Start the NATS Streaming server:
 
 ```sh
-docker run -p 4222:4222 -v $(pwd)/certs:/certs nats-streaming:linux -mc 0 -tls_client_cacert /certs/ca.pem --encrypt --encryption_key mykey --tlscert /certs/server.pem --tlskey /certs/server-key.pem --tls
+docker run -p 4222:4222 -v $(pwd):/certs nats-streaming:linux -mc 0 -tls_client_cacert /certs/ca.pem --encrypt --encryption_key mykey --tlscert /certs/server.pem --tlskey /certs/server-key.pem --tls
 ```
 
-Where `$(pwd)/certs` is the directory that contains all the created certificates.
+Where `$(pwd)` is the directory that contains all the created certificates.
 
 Finally, configure `convey` to use this server:
 
