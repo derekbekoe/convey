@@ -35,7 +35,7 @@ Hello world
 
 # Getting Started
 
-## 1. Install
+### 1. Install
 
 #### Linux
 ```bash
@@ -57,7 +57,7 @@ Invoke-WebRequest https://get.convey.sh/windows -OutFile convey.exe
 .\convey.exe -h
 ```
 
-## 2. First Use
+### 2. First Use
 
 Configure a keyfile. This can be a local filepath or accessible URL.
 
@@ -74,6 +74,9 @@ echo "Hello world" | convey
 convey <ID>
 Hello world
 ```
+
+If you're looking for ideas on what you can use this application for, see these [examples](docs/examples.md).
+
 
 # Configuration
 
@@ -97,19 +100,6 @@ By default, configuration is loaded from `$HOME/.convey.yaml`.
 
 [Further configuration docs](docs/configuration.md)
 
-# NATS Streaming Server
-
-You can host your own [NATS Streaming Server](https://docs.nats.io/nats-streaming-concepts/intro) and configure `convey` to use that server.
-
-#### Deploy to a local Docker container
-
-```bash
-docker run -p 4222:4222 nats-streaming:linux
-convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
-```
-
-You will need to use the `--unsecure` flag as TLS will not be enabled through this local container.
-
 # Development
 
 **Set up**
@@ -120,6 +110,14 @@ go run main.go
 ```
 
 [Further development docs](docs/development.md)
+
+# Self-hosting
+
+For convenience, we've provided a service that the application connects to by default.
+
+Alternatively, you can host your own [NATS Streaming Server](https://docs.nats.io/nats-streaming-concepts/intro) and configure `convey` to use that server.
+
+[Further self-hosting docs](docs/self_hosted_set_up.md)
 
 # License
 
