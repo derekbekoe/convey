@@ -93,7 +93,8 @@ echo '
 echo '{
     "CN": "Server",
     "hosts": [
-        "127.0.0.1"
+        "127.0.0.1",
+        "localhost"
     ]
 }' > server.json
 ```
@@ -116,7 +117,7 @@ Where `$(pwd)` is the directory that contains all the created certificates.
 Finally, configure `convey` to use this server:
 
 ```
-convey configure --nats-url nats://127.0.0.1:4222 --nats-cluster test-cluster --nats-cacert $(pwd)/ca.pem --keyfile FILE
+convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster --nats-cacert $(pwd)/ca.pem --keyfile FILE
 ```
 
 If you want to host on a VM instead, it should be fairly straightforward to modify the above and configure `convey` to point to the correct IP or hostname.
