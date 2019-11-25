@@ -4,7 +4,7 @@ For convenience, we've provided a service that the application uses by default.
 
 Alternatively, you can host your own [NATS Streaming Server](https://docs.nats.io/nats-streaming-concepts/intro) and configure `convey` to use that server.
 
-Some of these methods do not use TLS. Only use these methods for experimental or development purposes only. We only include these methods for illustration purposes. Typically, you should enable TLS on the NATS Server. See [encrypt connections with TLS](https://docs.nats.io/developing-with-nats/security/tls).
+Some of these methods do not use TLS. Only use the "no TLS" methods for experimental or development purposes only. Typically, you should enable TLS on the NATS Server. See [encrypt connections with TLS](https://docs.nats.io/developing-with-nats/security/tls).
 
 ## Host Local Docker container (no TLS)
 
