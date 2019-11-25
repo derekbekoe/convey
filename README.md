@@ -75,7 +75,7 @@ convey <ID>
 Hello world
 ```
 
-If you're looking for ideas on what you can use this application for, see these [examples](docs/examples.md).
+If you're looking for further ideas on what you can use this application for, see these [examples](docs/examples.md).
 
 
 # Configuration
