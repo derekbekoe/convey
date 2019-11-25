@@ -93,6 +93,7 @@ Flags:
       --fingerprint string    (advanced) If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile
       --nats-cluster string   (advanced) NATS cluster id
       --nats-url string       (advanced) NATS server url
+      --nats-cacert string    (advanced) Local path to CA certificate used by NATS server
   -h, --help                  help for configure
 ```
 
