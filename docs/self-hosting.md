@@ -128,4 +128,4 @@ If you want to host on a VM instead, it should be fairly straightforward to modi
 
 ## Host on VM with certificate signed by CA (TLS)
 
-TODO-DEREK Complete this using Lets Encrypt.
+<!-- TODO-DEREK Complete this using Lets Encrypt. -->
