@@ -196,6 +196,9 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		errorExit(s)
 	}
 
+	// TODO-DEREK Pass a TLS Configuration for proper TLS
+	// TODO-DEREK Figure out if clients can do things like list all channels etc. which we wouldn't want
+	// TODO-DEREK Support custom ca.pem to support connecting to self-signed tls connection
 	natsSecureOpt := nats.Secure()
 
 	if useUnsecure {

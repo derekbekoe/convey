@@ -117,7 +117,7 @@ For convenience, we've provided a service that the application uses by default.
 
 Alternatively, you can host your own [NATS Streaming Server](https://docs.nats.io/nats-streaming-concepts/intro) and configure `convey` to use that server.
 
-[Further self-hosting docs](docs/self_hosted_set_up.md)
+[Further self-hosting docs](docs/self-hosting.md)
 
 # License
 
