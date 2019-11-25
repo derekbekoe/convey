@@ -97,7 +97,7 @@ func init() {
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.convey.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
-	rootCmd.PersistentFlags().BoolVar(&useUnsecure, "unsecure", false, "use unsecured connection (for development purposes only)")
+	rootCmd.PersistentFlags().BoolVar(&useUnsecure, "unsecure", false, "(advanced) use unsecured connection (for development purposes only)")
 }
 
 // initConfig reads in config file and ENV variables if set.

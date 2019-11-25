@@ -77,10 +77,10 @@ func generateFingerprint(keyFile string) string {
 
 func init() {
 	rootCmd.AddCommand(configureCmd)
-	configureCmd.PersistentFlags().StringVar(&natsURL, "nats-url", "", "NATS server url")
-	configureCmd.PersistentFlags().StringVar(&natsClusterID, "nats-cluster", "", "NATS cluster id")
+	configureCmd.PersistentFlags().StringVar(&natsURL, "nats-url", "", "(advanced) NATS server url")
+	configureCmd.PersistentFlags().StringVar(&natsClusterID, "nats-cluster", "", "(advanced) NATS cluster id")
 	configureCmd.PersistentFlags().StringVar(&keyFile, "keyfile", "", "URL or local path to keyfile (at least 64 bytes is required)")
-	configureCmd.PersistentFlags().StringVar(&knownFingerprint, "fingerprint", "", "If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile")
+	configureCmd.PersistentFlags().StringVar(&knownFingerprint, "fingerprint", "", "(advanced) If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile")
 	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-names", false, "Use short channel names (channel conflicts could be more likely for a given keyfile/fingerprint)")
 	configureCmd.PersistentFlags().BoolVar(&forceWrite, "overwrite", false, "Overwrite current configuration")
 }

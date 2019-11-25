@@ -84,13 +84,13 @@ Usage:
   convey configure [flags]
 
 Flags:
-      --fingerprint string    If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile
-  -h, --help                  help for configure
       --keyfile string        URL or local path to keyfile (at least 64 bytes is required)
-      --nats-cluster string   NATS cluster id
-      --nats-url string       NATS server url
-      --overwrite             Overwrite current configuration
       --short-names           Use short channel names (channel conflicts could be more likely for a given keyfile/fingerprint)
+      --overwrite             Overwrite current configuration
+      --fingerprint string    (advanced) If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile
+      --nats-cluster string   (advanced) NATS cluster id
+      --nats-url string       (advanced) NATS server url
+  -h, --help                  help for configure
 ```
 
 By default, configuration is loaded from `$HOME/.convey.yaml`.
