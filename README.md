@@ -113,7 +113,7 @@ go run main.go
 
 # Self-hosting
 
-For convenience, we've provided a service that the application connects to by default.
+For convenience, we've provided a service that the application uses by default.
 
 Alternatively, you can host your own [NATS Streaming Server](https://docs.nats.io/nats-streaming-concepts/intro) and configure `convey` to use that server.
 
