@@ -215,9 +215,9 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		natsSecureOpt = nil
 	}
 
-	natsConn, err1 := nats.Connect(natsURL, natsSecureOpt)
-	if err1 != nil {
-		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err1)
+	natsConn, err := nats.Connect(natsURL, natsSecureOpt)
+	if err != nil {
+		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err)
 		errorExit(s)
 	}
 
