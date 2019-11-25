@@ -35,44 +35,39 @@ Hello world
 
 # Getting Started
 
-## Install
+## 1. Install
 
-### Linux
+#### Linux
 ```bash
 wget -qO ~/bin/convey https://get.convey.sh/linux
 chmod +x ~/bin/convey
 ~/bin/convey -h
 ```
 
-### macOS
+#### macOS
 ```bash
 curl -sLo ~/bin/convey https://get.convey.sh/macos
 chmod +x ~/bin/convey
 ~/bin/convey -h
 ```
 
-### Windows  
+#### Windows  
 ```powershell
 Invoke-WebRequest https://get.convey.sh/windows -OutFile convey.exe
 .\convey.exe -h
 ```
 
-## Demo Mode
-
-A demo mode is available using the `--demo` flag.
+## 2. First Use
 
 ```bash
-echo "Hello world" | convey --demo
+convey configure --keyfile URL
+echo "Hello world" | convey
 <ID>
 ```
 ```bash
-convey --demo <ID>
+convey <ID>
 Hello world
 ```
-
-Demo mode uses the `demo.nats.io` server over a TLS connection with channels expiring after 30 minutes of creation or 10 minutes of inactivity.
-
-Use this mode for experimental and getting started purposes only.
 
 # Configuration
 
@@ -113,33 +108,7 @@ cd $GOPATH/src/github.com/derekbekoe/convey
 go run main.go
 ```
 
-**Multi-platform Builds**
-```bash
-go get github.com/mitchellh/gox
-gox -ldflags "-X github.com/derekbekoe/convey/cmd.VersionGitCommit=$(git rev-list -1 HEAD) -X github.com/derekbekoe/convey/cmd.VersionGitTag=VERSION" -os="linux darwin" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
-```
-See https://golang.org/doc/install/source#environment
-
-**Go Module Verification**
-```bash
-go mod tidy
-# verification
-go build
-go test
-# list all
-go list -m all
-```
-
-# Examples
-
-Click to expand each gif.
-
-<div style="text-align: center">
-<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_top.gif" alt="Convey with Top" border="0" width="445">
-<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_filecp.gif" alt="Convey for file piping" border="0" width="445">
-<img src="https://derekb.blob.core.windows.net/public/blog_convey_vm_1_ms.gif" alt="Convey with millisecond date" border="0" width="445">
-<img src="https://derekb.blob.core.windows.net/public/blog_convey_cloudshell_1.gif" alt="Convey with Cloud Shell" border="0" width="445">
-</div>
+[Further development docs](docs/development.md)
 
 # License
 

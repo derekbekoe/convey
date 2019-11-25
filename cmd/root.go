@@ -42,8 +42,6 @@ const (
 	configKeyNatsClusterID = "NatsClusterID"
 	configKeyUseShortName  = "UseShortName"
 	configKeyFingerprint   = "Fingerprint"
-	demoNatsURL            = "tls://demo.nats.io:4443"
-	demoNatsClusterID      = "convey-demo-cluster"
 )
 
 // Path to config file set by user
@@ -54,9 +52,6 @@ var verbose bool
 
 // Whether non-tls connection should be used for NATS connection
 var useUnsecure bool
-
-// Whether the demo server and mode should be used
-var useDemoMode bool
 
 // etx is an identifier for End Of Text Sequence
 var etx = []byte{3}
@@ -103,7 +98,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.convey.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVar(&useUnsecure, "unsecure", false, "use unsecured connection (for development purposes only)")
-	rootCmd.PersistentFlags().BoolVar(&useDemoMode, "demo", false, "use demo mode")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -195,12 +189,6 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 	natsURL := viper.GetString(configKeyNatsURL)
 	natsClusterID := viper.GetString(configKeyNatsClusterID)
 
-	if useDemoMode {
-		log.Printf("Using demo mode")
-		natsURL = demoNatsURL
-		natsClusterID = demoNatsClusterID
-	}
-
 	if natsURL == "" || natsClusterID == "" {
 		s := fmt.Sprintf("The configuration options '%s' and '%s' are not set. Use `convey configure` to set. Use `--help` for usage.",
 			configKeyNatsURL,
@@ -211,7 +199,8 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 	natsSecureOpt := nats.Secure()
 
 	if useUnsecure {
-		log.Printf("Using unsecure connection to server")
+		s := fmt.Sprintf("Using unsecure connection to server - %s", natsURL)
+		log.Printf(s)
 		natsSecureOpt = nil
 	}
 
@@ -244,12 +233,8 @@ func publishModeFunc() {
 	useShortName := viper.GetBool(configKeyUseShortName)
 	channelName := ""
 
-	if useDemoMode && useShortName {
-		log.Printf("Short names not allowed in demo mode to prevent possible conflicts")
-	}
-
-	// Check if should use short names. Short names not allowed in demo mode to prevent possible conflicts.
-	if useShortName && !useDemoMode {
+	// Check if should use short names.
+	if useShortName {
 		channelName = createChannelNameShort()
 	} else {
 		channelName = createChannelNameUUID()
@@ -257,8 +242,8 @@ func publishModeFunc() {
 
 	channelID := getChannelID(channelName)
 
-	log.Printf("Using friendly channel name %s\n", channelName)
-	log.Printf("Publishing to channel id %s\n", channelID)
+	log.Printf("Using friendly channel name - %s\n", channelName)
+	log.Printf("Publishing to channel id - %s\n", channelID)
 
 	// Print channel to console for user to copy
 	fmt.Println(channelName)
@@ -296,8 +281,8 @@ func subscribeModeFunc(channelName string) {
 
 	channelID := getChannelID(channelName)
 
-	log.Printf("Using friendly channel name %s\n", channelName)
-	log.Printf("Subscribing to channel id %s\n", channelID)
+	log.Printf("Using friendly channel name - %s\n", channelName)
+	log.Printf("Subscribing to channel - id %s\n", channelID)
 
 	doneSubscribe := make(chan bool)
 

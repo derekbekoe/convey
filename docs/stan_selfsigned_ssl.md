@@ -49,3 +49,6 @@ echo '{
 ./cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=config.json -profile=server server.json | ./cfssljson -bare server
 
  docker run -p 4222:4222 -v $(pwd)/certs:/certs nats-streaming:linux -mc 0 -tls_client_cacert /certs/ca.pem --encrypt --encryption_key mykey --tlscert /certs/server.pem --tlskey /certs/server-key.pem --tls
+
+ TODO-DEREK Support custom ca.pem to support connecting to self-signed tls connection
+ TODO-DEREK Figure out if clients can do things like list all channels etc.
