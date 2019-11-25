@@ -27,7 +27,7 @@ convey configure --nats-url nats://IP_ADDRESS:4222 --nats-cluster convey-demo-cl
 convey --unsecure
 ```
 
-# Starting NATS Streaming this self-signed cert
+# Starting NATS Streaming with self-signed cert
 
 Extracted from https://itnext.io/secure-pub-sub-with-nats-fcda983d0612
 
