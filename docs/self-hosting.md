@@ -44,21 +44,25 @@ Note: You will need to use the `--unsecure` flag as TLS will not be enabled thro
 
 ## Host Local Docker container with self-signed cert (TLS)
 
-Extracted from https://itnext.io/secure-pub-sub-with-nats-fcda983d0612
+*The below steps to generate the certificates were adapted from this blog post: https://itnext.io/secure-pub-sub-with-nats-fcda983d0612*
 
-Download cfssl and cfssljson from https://github.com/cloudflare/cfssl/releases
+In order to secure our NATS server, we will create a self-signed cert and we will sign this certificate with our own self-signed Certification Authority. If you are familiar with this and can create your own certificates, you can skip this part.
+
+Download `cfssl` and `cfssljson` from https://github.com/cloudflare/cfssl/releases.
+
+Prepare some files for `cfssl`:
 
 ```sh
 echo '
 {
-  "CN": "Convey CA",
+  "CN": "Convey self-signed CA",
   "key": {
     "algo": "rsa",
     "size": 2048
   },
   "names": [
     {
-      "O": "Convey",
+      "O": "Convey CA",
       "L": "Portland",
       "ST": "Oregon",
       "C": "US"
@@ -67,46 +71,58 @@ echo '
 }' > ca.json
 ```
 
-echo '{
-    "signing": {
-        "default": {
-            "expiry": "43800h"
-        },
-        "profiles": {   
-            "server": {
-                "expiry": "43800h",
-                "usages": [
-                    "signing",
-                    "digital signing",
-                    "key encipherment",
-                    "server auth"
-                ]
-            }
-        }
+```sh
+echo '
+{
+  "signing": {
+    "default": {
+      "expiry": "43800h"
+    },
+    "profiles": {   
+      "server": {
+        "expiry": "43800h",
+        "usages": [
+          "signing",
+          "digital signing",
+          "key encipherment",
+          "server auth"
+        ]
+      }
     }
+  }
 }' > config.json
+```
 
+```sh
 echo '{
     "CN": "Server",
     "hosts": [
-        "127.0.0.1",
-        "messaging.techwhale.io"
+        "127.0.0.1"
     ]
 }' > server.json
+```
 
-./cfssl gencert -initca ca.json | ./cfssljson -bare ca
-./cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=config.json -profile=server server.json | ./cfssljson -bare server
+Generate the certificates:
 
- docker run -p 4222:4222 -v $(pwd)/certs:/certs nats-streaming:linux -mc 0 -tls_client_cacert /certs/ca.pem --encrypt --encryption_key mykey --tlscert /certs/server.pem --tlskey /certs/server-key.pem --tls
+```sh
+cfssl gencert -initca ca.json | cfssljson -bare ca
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=config.json -profile=server server.json | cfssljson -bare server
+```
 
+Start the NATS Streaming server:
 
-Configure `convey` to use this server:
+```sh
+docker run -p 4222:4222 -v $(pwd)/certs:/certs nats-streaming:linux -mc 0 -tls_client_cacert /certs/ca.pem --encrypt --encryption_key mykey --tlscert /certs/server.pem --tlskey /certs/server-key.pem --tls
+```
 
+Where `$(pwd)/certs` is the directory that contains all the created certificates.
+
+Finally, configure `convey` to use this server:
+
+<!-- TODO-DEREK Verify it works without --unsecure -->
 ```
 convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
 ```
-
-TODO-DEREK Verify it works without --unsecure
 
 If you want to host on a VM instead, it should be fairly straightforward to modify the above and configure `convey` to point to the correct IP or hostname.
 
