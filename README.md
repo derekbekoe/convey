@@ -59,11 +59,17 @@ Invoke-WebRequest https://get.convey.sh/windows -OutFile convey.exe
 
 ## 2. First Use
 
+Configure a keyfile. This can be a local filepath or accessible URL.
+
 ```bash
-convey configure --keyfile URL
+convey configure --keyfile FILE
+```
+
+```bash
 echo "Hello world" | convey
 <ID>
 ```
+
 ```bash
 convey <ID>
 Hello world
@@ -72,23 +78,28 @@ Hello world
 # Configuration
 
 Set configuration with the `convey configure` command.
-```bash
-convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
+
+```
+Usage:
+  convey configure [flags]
+
+Flags:
+      --fingerprint string    If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile
+  -h, --help                  help for configure
+      --keyfile string        URL or local path to keyfile (at least 64 bytes is required)
+      --nats-cluster string   NATS cluster id
+      --nats-url string       NATS server url
+      --overwrite             Overwrite current configuration
+      --short-names           Use short channel names (channel conflicts could be more likely for a given keyfile/fingerprint)
 ```
 
 By default, configuration is loaded from `$HOME/.convey.yaml`.
 
-This is an example of `.convey.yaml`:
-```yaml
-NatsURL: nats://localhost:4223
-NatsClusterID: test-cluster
-```
-
-Use the `--config` flag on the command line to change the config file used if needed.
+[Further configuration docs](docs/configuration.md)
 
 # NATS Streaming Server
 
-You can host your own [NATS Streaming Server](https://nats.io/documentation/streaming/nats-streaming-intro/) and configure `convey` to use that server.
+You can host your own [NATS Streaming Server](https://docs.nats.io/nats-streaming-concepts/intro) and configure `convey` to use that server.
 
 #### Deploy to a local Docker container
 
