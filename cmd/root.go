@@ -1,4 +1,4 @@
-// Copyright © 2019 NAME HERE <EMAIL ADDRESS>
+// Copyright © 2019 Derek Bekoe
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -215,9 +215,9 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		natsSecureOpt = nil
 	}
 
-	natsConn, err1 := nats.Connect(natsURL, natsSecureOpt)
-	if err1 != nil {
-		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err1)
+	natsConn, err := nats.Connect(natsURL, natsSecureOpt)
+	if err != nil {
+		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err)
 		errorExit(s)
 	}
 

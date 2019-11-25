@@ -38,31 +38,30 @@ const Shake256MinBytesRequired = 64
 func generateFingerprint(keyFile string) string {
 	hash := make([]byte, FingerprintByteLength)
 	var inputBytes []byte
+	var err error
 	if keyFile == "" {
 		return ""
 	}
 	if strings.HasPrefix(keyFile, "http://") || strings.HasPrefix(keyFile, "https://") {
 		// Read keyfile from url
-		resp, err1 := http.Get(keyFile)
-		if err1 != nil {
-			errorExit(err1.Error())
+		resp, err := http.Get(keyFile)
+		if err != nil {
+			errorExit(err.Error())
 		}
 		if resp.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf("Keyfile url not OK - Status code %d was returned from GET %s", resp.StatusCode, keyFile)
 			errorExit(errMsg)
 		}
 		defer resp.Body.Close()
-		var err2 error
-		inputBytes, err2 = ioutil.ReadAll(resp.Body)
-		if err2 != nil {
-			errorExit(err2.Error())
+		inputBytes, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			errorExit(err.Error())
 		}
 	} else {
 		// Read keyfile from local file
-		var err1 error
-		inputBytes, err1 = ioutil.ReadFile(keyFile)
-		if err1 != nil {
-			errorExit(err1.Error())
+		inputBytes, err = ioutil.ReadFile(keyFile)
+		if err != nil {
+			errorExit(err.Error())
 		}
 	}
 
@@ -82,7 +81,7 @@ func init() {
 	configureCmd.PersistentFlags().StringVar(&natsClusterID, "nats-cluster", "", "NATS cluster id")
 	configureCmd.PersistentFlags().StringVar(&keyFile, "keyfile", "", "URL or local path to keyfile (at least 64 bytes is required)")
 	configureCmd.PersistentFlags().StringVar(&knownFingerprint, "fingerprint", "", "If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile")
-	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-names", false, "Use short channel names (channel conflicts could be more likely for a given keyfile)")
+	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-names", false, "Use short channel names (channel conflicts could be more likely for a given keyfile/fingerprint)")
 	configureCmd.PersistentFlags().BoolVar(&forceWrite, "overwrite", false, "Overwrite current configuration")
 }
 
