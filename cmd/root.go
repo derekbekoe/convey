@@ -40,6 +40,7 @@ import (
 const (
 	configKeyNatsURL       = "NatsURL"
 	configKeyNatsClusterID = "NatsClusterID"
+	configKeyNatsCACert    = "NatsCACert"
 	configKeyUseShortName  = "UseShortName"
 	configKeyFingerprint   = "Fingerprint"
 )
@@ -49,9 +50,6 @@ var cfgFile string
 
 // Whether to log verbose output
 var verbose bool
-
-// Whether non-tls connection should be used for NATS connection
-var useUnsecure bool
 
 // etx is an identifier for End Of Text Sequence
 var etx = []byte{3}
@@ -97,7 +95,6 @@ func init() {
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.convey.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
-	rootCmd.PersistentFlags().BoolVar(&useUnsecure, "unsecure", false, "(advanced) use unsecured connection (for development purposes only)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -168,11 +165,7 @@ func getChannelID(channelName string) string {
 	hash := make([]byte, 64)
 	fingerprint := viper.GetString(configKeyFingerprint)
 	if fingerprint == "" {
-		if useUnsecure {
-			log.Printf("Allowing no fingerprint as user specified --unsecure.")
-		} else {
-			errorExit("No keyfile fingerprint found - Use 'convey configure' to set the keyfile.")
-		}
+		errorExit("No keyfile fingerprint found - Use 'convey configure' to set the keyfile.")
 	} else {
 		if !IsValidFingerprint(fingerprint) {
 			errorExit(InvalidFingerprintMsg)
@@ -188,6 +181,7 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 
 	natsURL := viper.GetString(configKeyNatsURL)
 	natsClusterID := viper.GetString(configKeyNatsClusterID)
+	natsRootCa := viper.GetString(configKeyNatsCACert)
 
 	if natsURL == "" || natsClusterID == "" {
 		s := fmt.Sprintf("The configuration options '%s' and '%s' are not set. Use `convey configure` to set. Use `--help` for usage.",
@@ -196,18 +190,16 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		errorExit(s)
 	}
 
-	// TODO-DEREK Pass a TLS Configuration for proper TLS
 	// TODO-DEREK Figure out if clients can do things like list all channels etc. which we wouldn't want
-	// TODO-DEREK Support custom ca.pem to support connecting to self-signed tls connection
-	natsSecureOpt := nats.Secure()
 
-	if useUnsecure {
-		s := fmt.Sprintf("Using unsecure connection to server - %s", natsURL)
-		log.Printf(s)
-		natsSecureOpt = nil
+	// Allow custom root CA to support connecting to self-signed tls connection
+	var natsRootCaOpt nats.Option
+	if natsRootCa != "" {
+		natsRootCaOpt = nats.RootCAs(natsRootCa)
+		log.Printf("Using user-specified root CA certificate - %s\n", natsRootCa)
 	}
 
-	natsConn, err := nats.Connect(natsURL, natsSecureOpt)
+	natsConn, err := nats.Connect(natsURL, natsRootCaOpt)
 	if err != nil {
 		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err)
 		errorExit(s)

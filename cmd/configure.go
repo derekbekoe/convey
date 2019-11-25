@@ -20,6 +20,9 @@ var natsURL string
 // The NATS cluster ID passed in from command-line
 var natsClusterID string
 
+// Path to CA certificate path (useful for self-signed CAs)
+var natsCaCert string
+
 // The URL or filepath to file
 var keyFile string
 
@@ -79,6 +82,7 @@ func init() {
 	rootCmd.AddCommand(configureCmd)
 	configureCmd.PersistentFlags().StringVar(&natsURL, "nats-url", "", "(advanced) NATS server url")
 	configureCmd.PersistentFlags().StringVar(&natsClusterID, "nats-cluster", "", "(advanced) NATS cluster id")
+	configureCmd.PersistentFlags().StringVar(&natsCaCert, "nats-cacert", "", "(advanced) Local path to CA certificate used by NATS server")
 	configureCmd.PersistentFlags().StringVar(&keyFile, "keyfile", "", "URL or local path to keyfile (at least 64 bytes is required)")
 	configureCmd.PersistentFlags().StringVar(&knownFingerprint, "fingerprint", "", "(advanced) If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile")
 	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-names", false, "Use short channel names (channel conflicts could be more likely for a given keyfile/fingerprint)")
@@ -112,6 +116,7 @@ func ConfigureCommandFunc(cmd *cobra.Command, args []string) {
 	viper.Set(configKeyNatsURL, natsURL)
 	viper.Set(configKeyNatsClusterID, natsClusterID)
 	viper.Set(configKeyUseShortName, useShortName)
+	viper.Set(configKeyNatsCACert, natsCaCert)
 
 	// If a config file is found, read it in.
 	configFileExists := false

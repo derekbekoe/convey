@@ -4,7 +4,7 @@ For convenience, we've provided a service that the application uses by default.
 
 Alternatively, you can host your own [NATS Streaming Server](https://docs.nats.io/nats-streaming-concepts/intro) and configure `convey` to use that server.
 
-Some of these methods require using the `convey` `--unsecure` flag. Only use this flag for experimental or development purposes only. We only include these methods as an illustration as traffic to the server is not encrypted. Typically, you should [encrypt connections with TLS](https://docs.nats.io/developing-with-nats/security/tls).
+Some of these methods do not use TLS. Only use these methods for experimental or development purposes only. We only include these methods for illustration purposes. Typically, you should enable TLS on the NATS Server. See [encrypt connections with TLS](https://docs.nats.io/developing-with-nats/security/tls).
 
 ## Host Local Docker container (no TLS)
 
@@ -19,8 +19,6 @@ Configure `convey` to use this server:
 ```
 convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
 ```
-
-Note: You will need to use the `--unsecure` flag as TLS will not be enabled through this local container.
 
 ## Host on Azure Container Instances (no TLS)
 
@@ -39,8 +37,6 @@ Configure `convey` to use this server:
 ```
 convey configure --nats-url nats://IP_ADDRESS:4222 --nats-cluster test-cluster
 ```
-
-Note: You will need to use the `--unsecure` flag as TLS will not be enabled through this local container.
 
 ## Host Local Docker container with self-signed cert (TLS)
 
@@ -119,9 +115,8 @@ Where `$(pwd)` is the directory that contains all the created certificates.
 
 Finally, configure `convey` to use this server:
 
-<!-- TODO-DEREK Verify it works without --unsecure -->
 ```
-convey configure --nats-url nats://localhost:4222 --nats-cluster test-cluster
+convey configure --nats-url nats://127.0.0.1:4222 --nats-cluster test-cluster --nats-cacert $(pwd)/ca.pem --keyfile FILE
 ```
 
 If you want to host on a VM instead, it should be fairly straightforward to modify the above and configure `convey` to point to the correct IP or hostname.
