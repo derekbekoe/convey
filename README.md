@@ -15,10 +15,10 @@
 
 ```bash
 echo "Hello world" | convey
-21f50fba373e11e9990a72000872a940
+vibrant_allen
 ```
 ```bash
-convey 21f50fba373e11e9990a72000872a940
+convey vibrant_allen
 Hello world
 ```
 
@@ -27,7 +27,7 @@ Hello world
 - Pipe between hosts with an idomatic interface using the standard `|` symbol.
 - Easily pipe files between hosts.
 - Does not require any open ports between your clients.
-- Configure it to use short channel names instead of UUIDs for easy typing such as `vibrant_allen`.
+- Configure it to use short channel names for easy typing such as `vibrant_allen` or UUIDs.
 - Supports colors through [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors).
 - Supports Linux, macOS and Windows.
 - No dependencies to install.
@@ -96,12 +96,12 @@ Usage:
 
 Flags:
       --keyfile string        URL or local path to keyfile (at least 64 bytes is required)
-      --short-names           Use short channel names (channel conflicts could be more likely for a given keyfile/fingerprint)
+      --long-names            Use standard uuid format channel names 
       --overwrite             Overwrite current configuration
       --fingerprint string    (advanced) If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile
+      --nats-cacert string    (advanced) Local path to CA certificate used by NATS server
       --nats-cluster string   (advanced) NATS cluster id
       --nats-url string       (advanced) NATS server url
-      --nats-cacert string    (advanced) Local path to CA certificate used by NATS server
   -h, --help                  help for configure
 ```
 
