@@ -124,4 +124,45 @@ If you want to host on a VM instead, it should be fairly straightforward to modi
 
 ## Host on VM with certificate signed by CA (TLS)
 
-<!-- TODO-DEREK Complete this using Lets Encrypt. -->
+Create a resource group and VM:
+```sh
+az group create -n nats -l westus
+az vm create --image UbuntuLTS -g nats -n convey-nats-usw2-1 -l westus2 --size Standard_DS2_v2 --public-ip-address-dns-name convey-nats-usw2-1
+az vm open-port -g nats -n convey-nats-usw2-1 --port 80 443 4443 4444
+```
+
+SSH into the VM:
+```
+ssh IP_ADDRESS
+```
+
+Use certbot to get your SSL certificate:
+
+https://certbot.eff.org/lets-encrypt/ubuntubionic-other
+
+Install and start NATS Server:
+
+```sh
+wget -O nats-server.deb https://github.com/nats-io/nats-server/releases/download/v2.1.2/nats-server-v2.1.2-amd64.deb
+
+nohup nats-server --addr 0.0.0.0 --port 4443 --https_port 4444 --tlscert /etc/letsencrypt/live/convey-nats-usw2-1.westus2.cloudapp.azure.com/fullchain.pem --tlskey /etc/letsencrypt/live/convey-nats-usw2-1.westus2.cloudapp.azure.com/privkey.pem --tls --log /var/log/nats-server &
+```
+
+(see https://github.com/nats-io/nats-server/releases for the newest release)
+
+Install and start NATS Streaming Server:
+
+```
+wget -O nats-streaming-server.deb https://github.com/nats-io/nats-streaming-server/releases/download/v0.16.2/nats-streaming-server-v0.16.2-amd64.deb
+dpkg -i nats-streaming-server.deb 
+
+nohup nats-streaming-server --cluster_id test-cluster --store MEMORY --max_channels 0 --max_subs 0 --max_msgs 0 --max_bytes 0 --max_age 24h --max_inactivity 10m --encrypt --encryption_key mykey --nats_server nats://convey-nats-usw2-1.westus2.cloudapp.azure.com:4443 --log /var/log/nats-streaming-server &
+```
+
+(see https://github.com/nats-io/nats-streaming-server/releases for the newest release)
+
+Finally, configure `convey` to use this server:
+
+```
+convey configure --nats-url nats://convey-nats-usw2-1.westus2.cloudapp.azure.com:4443 --nats-cluster test-cluster --keyfile FILE
+```
