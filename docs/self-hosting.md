@@ -109,7 +109,7 @@ cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=config.json -profile=server 
 Start the NATS Streaming server:
 
 ```sh
-docker run -p 4222:4222 -v $(pwd):/certs nats-streaming:linux --cluster_id test-cluster --store MEMORY --max_channels 0 --max_subs 0 --max_msgs 0 --max_bytes 0 --max_age 24h --max_inactivity 24h -tls_client_cacert /certs/ca.pem --encrypt --encryption_key mykey --tlscert /certs/server.pem --tlskey /certs/server-key.pem --tls
+docker run -p 4222:4222 -v $(pwd):/certs nats-streaming:linux --cluster_id test-cluster --store MEMORY --max_channels 0 --max_subs 0 --max_msgs 0 --max_bytes 0 --max_age 24h --max_inactivity 10m -tls_client_cacert /certs/ca.pem --encrypt --encryption_key mykey --tlscert /certs/server.pem --tlskey /certs/server-key.pem --tls
 ```
 
 Where `$(pwd)` is the directory that contains all the created certificates.
