@@ -41,7 +41,7 @@ const (
 	configKeyNatsURL       = "NatsURL"
 	configKeyNatsClusterID = "NatsClusterID"
 	configKeyNatsCACert    = "NatsCACert"
-	configKeyUseShortName  = "UseShortName"
+	configKeyUseLongName   = "UseLongName"
 	configKeyFingerprint   = "Fingerprint"
 )
 
@@ -190,8 +190,6 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		errorExit(s)
 	}
 
-	// TODO-DEREK Figure out if clients can do things like list all channels etc. which we wouldn't want
-
 	// Allow custom root CA to support connecting to self-signed tls connection
 	var natsRootCaOpt nats.Option
 	if natsRootCa != "" {
@@ -217,6 +215,8 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		errorExit(s)
 	}
 
+	log.Printf("Using TLS connection? - %t\n", natsConn.TLSRequired())
+
 	return stanConn, natsConn
 }
 
@@ -225,14 +225,13 @@ func publishModeFunc() {
 	clientID := getClientID("convey-pub")
 	stanConn, natsConn := connectToStan(clientID)
 
-	useShortName := viper.GetBool(configKeyUseShortName)
+	useLongName := viper.GetBool(configKeyUseLongName)
 	channelName := ""
 
-	// Check if should use short names.
-	if useShortName {
-		channelName = createChannelNameShort()
-	} else {
+	if useLongName {
 		channelName = createChannelNameUUID()
+	} else {
+		channelName = createChannelNameShort()
 	}
 
 	channelID := getChannelID(channelName)
@@ -297,6 +296,7 @@ func subscribeModeFunc(channelName string) {
 	<-doneSubscribe
 
 	sub.Unsubscribe()
+	sub.Close()
 	stanConn.Close()
 	natsConn.Close()
 }
