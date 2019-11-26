@@ -190,8 +190,6 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		errorExit(s)
 	}
 
-	// TODO-DEREK Figure out if clients can do things like list all channels etc. which we wouldn't want
-
 	// Allow custom root CA to support connecting to self-signed tls connection
 	var natsRootCaOpt nats.Option
 	if natsRootCa != "" {
