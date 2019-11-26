@@ -27,11 +27,15 @@ Hello world
 - Pipe between hosts with an idomatic interface using the standard `|` symbol.
 - Easily pipe files between hosts.
 - Does not require any open ports between your clients.
-- Configure it to use short channel names for easy typing such as `vibrant_allen` or UUIDs.
+- Short channel names allow for easy typing such as `vibrant_allen`.
 - Supports colors through [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors).
 - Supports Linux, macOS and Windows.
 - No dependencies to install.
 - Powered by [NATS](https://nats.io/), a CNCF project.
+- Pre-configured to use our hosted service so you can get started right away.
+  - Data in encrypted in transit with TLS and encrypted in the in-memory store.
+  - Data is deleted after 10 minutes of inactivity or 24 hours.
+- Self-hosting is available if you'd prefer.
 
 # Getting Started
 
