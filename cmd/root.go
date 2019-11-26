@@ -43,6 +43,8 @@ const (
 	configKeyNatsCACert    = "NatsCACert"
 	configKeyUseLongName   = "UseLongName"
 	configKeyFingerprint   = "Fingerprint"
+	hostedNatsURL          = "tls://nats.convey.sh:4443"
+	hostedNatsClusterID    = "convey-cluster"
 )
 
 // Path to config file set by user
@@ -183,8 +185,14 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 	natsClusterID := viper.GetString(configKeyNatsClusterID)
 	natsRootCa := viper.GetString(configKeyNatsCACert)
 
-	if natsURL == "" || natsClusterID == "" {
-		s := fmt.Sprintf("The configuration options '%s' and '%s' are not set. Use `convey configure` to set. Use `--help` for usage.",
+	if natsURL == "" && natsClusterID == "" {
+		// Use hosted service
+		natsURL = hostedNatsURL
+		natsClusterID = hostedNatsClusterID
+		// Ignore any custom root CA set if we are using our hosted service
+		natsRootCa = ""
+	} else if natsURL == "" || natsClusterID == "" {
+		s := fmt.Sprintf("The configuration options '%s' and '%s' are not set. Use `convey configure` to set both or don't set any to use the hosted service.",
 			configKeyNatsURL,
 			configKeyNatsClusterID)
 		errorExit(s)
@@ -202,6 +210,9 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		s := fmt.Sprintf("Failed to connect to NATS server due to error - %s", err)
 		errorExit(s)
 	}
+
+	msgServerInfo := fmt.Sprintf("Using NATS server - %s - %s", natsURL, natsClusterID)
+	log.Printf(msgServerInfo)
 
 	stanConn, err := stan.Connect(
 		natsClusterID,

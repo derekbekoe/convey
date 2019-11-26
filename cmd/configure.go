@@ -85,7 +85,7 @@ func init() {
 	configureCmd.PersistentFlags().StringVar(&natsCaCert, "nats-cacert", "", "(advanced) Local path to CA certificate used by NATS server")
 	configureCmd.PersistentFlags().StringVar(&keyFile, "keyfile", "", "URL or local path to keyfile (at least 64 bytes is required)")
 	configureCmd.PersistentFlags().StringVar(&knownFingerprint, "fingerprint", "", "(advanced) If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile")
-	configureCmd.PersistentFlags().BoolVar(&useLongName, "long-names", false, "Use standard uuid format channel names ")
+	configureCmd.PersistentFlags().BoolVar(&useLongName, "long-names", false, "Use standard uuid format for channel names ")
 	configureCmd.PersistentFlags().BoolVar(&forceWrite, "overwrite", false, "Overwrite current configuration")
 }
 
