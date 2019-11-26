@@ -298,6 +298,7 @@ func subscribeModeFunc(channelName string) {
 	<-doneSubscribe
 
 	sub.Unsubscribe()
+	sub.Close()
 	stanConn.Close()
 	natsConn.Close()
 }
