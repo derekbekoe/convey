@@ -217,6 +217,8 @@ func connectToStan(clientID string) (stan.Conn, *nats.Conn) {
 		errorExit(s)
 	}
 
+	log.Printf("Using TLS connection? - %t\n", natsConn.TLSRequired())
+
 	return stanConn, natsConn
 }
 
