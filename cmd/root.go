@@ -41,7 +41,7 @@ const (
 	configKeyNatsURL       = "NatsURL"
 	configKeyNatsClusterID = "NatsClusterID"
 	configKeyNatsCACert    = "NatsCACert"
-	configKeyUseShortName  = "UseShortName"
+	configKeyUseLongName   = "UseLongName"
 	configKeyFingerprint   = "Fingerprint"
 )
 
@@ -225,14 +225,13 @@ func publishModeFunc() {
 	clientID := getClientID("convey-pub")
 	stanConn, natsConn := connectToStan(clientID)
 
-	useShortName := viper.GetBool(configKeyUseShortName)
+	useLongName := viper.GetBool(configKeyUseLongName)
 	channelName := ""
 
-	// Check if should use short names.
-	if useShortName {
-		channelName = createChannelNameShort()
-	} else {
+	if useLongName {
 		channelName = createChannelNameUUID()
+	} else {
+		channelName = createChannelNameShort()
 	}
 
 	channelID := getChannelID(channelName)

@@ -29,8 +29,8 @@ var keyFile string
 // A known fingerprint in hex format
 var knownFingerprint string
 
-// Whether short channel names should be used instead of the standard uuid format
-var useShortName bool
+// Whether standard uuid format channel names should be used instead of the short names
+var useLongName bool
 
 // Whether the current config file should be overwritten
 var forceWrite bool
@@ -85,7 +85,7 @@ func init() {
 	configureCmd.PersistentFlags().StringVar(&natsCaCert, "nats-cacert", "", "(advanced) Local path to CA certificate used by NATS server")
 	configureCmd.PersistentFlags().StringVar(&keyFile, "keyfile", "", "URL or local path to keyfile (at least 64 bytes is required)")
 	configureCmd.PersistentFlags().StringVar(&knownFingerprint, "fingerprint", "", "(advanced) If you know the fingerprint you want to use (SHAKE-256 hex), you can set it directly instead of using --keyfile")
-	configureCmd.PersistentFlags().BoolVar(&useShortName, "short-names", false, "Use short channel names (channel conflicts could be more likely for a given keyfile/fingerprint)")
+	configureCmd.PersistentFlags().BoolVar(&useLongName, "long-names", false, "Use standard uuid format channel names ")
 	configureCmd.PersistentFlags().BoolVar(&forceWrite, "overwrite", false, "Overwrite current configuration")
 }
 
@@ -115,7 +115,7 @@ func ConfigureCommandFunc(cmd *cobra.Command, args []string) {
 	viper.Set(configKeyFingerprint, fingerprint)
 	viper.Set(configKeyNatsURL, natsURL)
 	viper.Set(configKeyNatsClusterID, natsClusterID)
-	viper.Set(configKeyUseShortName, useShortName)
+	viper.Set(configKeyUseLongName, useLongName)
 	viper.Set(configKeyNatsCACert, natsCaCert)
 
 	// If a config file is found, read it in.
