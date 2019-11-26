@@ -124,7 +124,7 @@ If you want to host on a VM instead, it should be fairly straightforward to modi
 
 ## Host on VM with certificate signed by CA (TLS)
 
-Create a resource group and VM:
+Create a resource group and VM (an Azure VM in this sample):
 ```sh
 az group create -n nats -l westus
 az vm create --image UbuntuLTS -g nats -n convey-nats-usw2-1 -l westus2 --size Standard_DS2_v2 --public-ip-address-dns-name convey-nats-usw2-1
@@ -148,7 +148,7 @@ wget -O nats-server.deb https://github.com/nats-io/nats-server/releases/download
 nohup nats-server --addr 0.0.0.0 --port 4443 --https_port 4444 --tlscert /etc/letsencrypt/live/convey-nats-usw2-1.westus2.cloudapp.azure.com/fullchain.pem --tlskey /etc/letsencrypt/live/convey-nats-usw2-1.westus2.cloudapp.azure.com/privkey.pem --tls --log /var/log/nats-server &
 ```
 
-(see https://github.com/nats-io/nats-server/releases for the newest release)
+Other releases: https://github.com/nats-io/nats-server/releases
 
 Install and start NATS Streaming Server:
 
@@ -159,7 +159,7 @@ dpkg -i nats-streaming-server.deb
 nohup nats-streaming-server --cluster_id test-cluster --store MEMORY --max_channels 0 --max_subs 0 --max_msgs 0 --max_bytes 0 --max_age 24h --max_inactivity 10m --encrypt --encryption_key mykey --nats_server nats://convey-nats-usw2-1.westus2.cloudapp.azure.com:4443 --log /var/log/nats-streaming-server &
 ```
 
-(see https://github.com/nats-io/nats-streaming-server/releases for the newest release)
+Other releases: https://github.com/nats-io/nats-streaming-server/releases
 
 Finally, configure `convey` to use this server:
 
