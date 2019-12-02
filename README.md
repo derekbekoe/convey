@@ -63,7 +63,7 @@ Invoke-WebRequest https://get.convey.sh/windows -OutFile convey.exe
 
 ### 2. Configure Keyfile
 
-Configure a keyfile. This can be a local filepath or accessible URL.
+Configure a keyfile. This can be a local filepath, accessible URL or file download link.
 
 ```bash
 convey configure --keyfile FILE
