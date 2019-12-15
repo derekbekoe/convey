@@ -24,7 +24,7 @@ Hello world
 
 # Features
 
-- Pipe between hosts with an idomatic interface using the standard `|` symbol.
+- Pipe between hosts with an idiomatic interface using the standard `|` symbol.
 - Easily pipe files between hosts.
 - Does not require any open ports between your clients.
 - Short channel names allow for easy typing such as `vibrant_allen`.
