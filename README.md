@@ -43,6 +43,7 @@ Hello world
 
 #### Linux
 ```bash
+mkdir -p ~/bin
 wget -qO ~/bin/convey https://get.convey.sh/linux
 chmod +x ~/bin/convey
 ~/bin/convey -h
@@ -50,6 +51,7 @@ chmod +x ~/bin/convey
 
 #### macOS
 ```bash
+mkdir -p ~/bin
 curl -sLo ~/bin/convey https://get.convey.sh/macos
 chmod +x ~/bin/convey
 ~/bin/convey -h
