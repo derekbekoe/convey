@@ -6,7 +6,6 @@
 <p align="center">
 <a href="https://github.com/derekbekoe/convey/releases"><img src="https://img.shields.io/github/release/derekbekoe/convey.svg?style=flat-square&logo=github&color=%236C63FF" alt="Version"></a>
 <a href="https://travis-ci.org/derekbekoe/convey"><img src="https://img.shields.io/travis/derekbekoe/convey/master.svg?style=flat-square&logo=travis" alt="Build Status"></a>
-<a href="https://online.visualstudio.com/environments/new?name=👏%20Convey&repo=derekbekoe/convey"><img src="https://img.shields.io/static/v1?style=flat-square&logo=microsoft&label=VS%20Online&message=Create&color=blue" alt="VS Online"></a>
 </p>
 <div align="center">
 <p>A command-line tool that makes it easy to pipe between machines.</p>
